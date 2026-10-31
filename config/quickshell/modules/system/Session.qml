@@ -64,7 +64,8 @@ Scope {
             + "general {\n"
             + "    lock_cmd = qs -c vyntaris ipc call lock lock\n"
             + "    before_sleep_cmd = loginctl lock-session\n"
-            + `    after_sleep_cmd = ${dpms("on")}\n`
+            // Only a screen that is off gets turned on: on one that's on it's a modeset the wake-up has to wait for.
+            + `    after_sleep_cmd = hyprctl monitors | grep -q 'dpmsStatus: 0' && ${dpms("on")}; qs -c vyntaris ipc call lock woke\n`
             + "}\n"
             + listener(Config.idle.dimAfter, "qs -c vyntaris ipc call brightness dim", "qs -c vyntaris ipc call brightness restore")
             + listener(Config.idle.lockAfter, "loginctl lock-session")

@@ -51,7 +51,7 @@ Item {
             readonly property var kind: root.kinds.find(k => k.id === modelData.kind)
             Layout.fillWidth: true
             spacing: Theme.space10
-            Icon { name: use.kind?.icon ?? "eye"; size: 15; color: use.kind?.color ?? Theme.accentInk }
+            Icon { name: use.kind?.icon ?? "eye"; size: 15; color: Theme.ink(use.kind?.color ?? Theme.accent) }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0

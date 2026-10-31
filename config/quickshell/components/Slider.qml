@@ -54,7 +54,7 @@ Item {
                 height: on ? 12 : 6
                 anchors.verticalCenter: parent.verticalCenter
                 radius: 2
-                color: !on ? (area.containsMouse ? Theme.overlay1 : Theme.controlEdge)
+                color: !on ? (area.containsMouse ? Theme.trackOffHover : Theme.trackOff)
                     : root.dimmed ? Theme.overlay0
                     : index >= Math.round(root.caution * root.count) ? Theme.warning
                     : index === root.lit - 1 ? Theme.accentBright : root.fillColor

@@ -194,7 +194,7 @@ Scope {
                     source: "file://" + Config.wallpaperFile()
                     blur: win.reveal
                     blurMultiplier: 0.7
-                    veil: Theme.alpha(Theme.crust, 0.45)
+                    veil: Theme.isDark ? Theme.alpha(Theme.crust, 0.45) : Theme.wallpaperVeil
                 }
             }
 

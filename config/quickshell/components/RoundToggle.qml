@@ -58,7 +58,7 @@ Item {
         elide: Text.ElideRight
         font.pixelSize: Theme.fontSizeSmall
         font.weight: root.on ? Font.DemiBold : Font.Normal
-        color: root.on ? (root.tint === Theme.accentInk ? Theme.text : root.tint) : Theme.overlay1
+        color: root.on ? (Qt.colorEqual(root.tint, Theme.accent) ? Theme.text : Theme.ink(root.tint)) : Theme.overlay1
         text: root.label
     }
 

@@ -74,7 +74,7 @@ def fit(colour, dark):
     h, s, _ = hsl(colour)
     if dark:
         return from_hsl(h, min(0.92, max(0.6, s)), 0.77)
-    return from_hsl(h, min(0.85, max(0.55, s)), 0.6)
+    return from_hsl(h, min(0.92, max(0.6, s)), 0.77)
 
 def partner_of(colour):
     h, s, l = hsl(colour)

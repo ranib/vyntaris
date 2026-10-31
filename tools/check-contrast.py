@@ -36,6 +36,38 @@ def ensure(color, background, ratio, towards):
     return towards
 
 
+def hsl(c):
+    r, g, b = (int(c[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    hi, lo = max(r, g, b), min(r, g, b)
+    l, d = (hi + lo) / 2, hi - lo
+    if d == 0:
+        return 0, 0, l
+    s = d / (1 - abs(2 * l - 1))
+    h = 60 * (((g - b) / d) % 6) if hi == r else 60 * ((b - r) / d + 2) if hi == g else 60 * ((r - g) / d + 4)
+    return h % 360, s, l
+
+
+def from_hsl(h, s, l):
+    c = (1 - abs(2 * l - 1)) * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    rgb = [(c, x, 0), (x, c, 0), (0, c, x), (0, x, c), (x, 0, c), (c, 0, x)][int(h // 60) % 6]
+    return "#" + "".join(f"{int((v + l - c / 2) * 255 + 0.5):02x}" for v in rgb)
+
+
+def deepen(color, background, ratio):
+    h, s, l = hsl(color)
+    while l > 0:
+        d = from_hsl(h, s, l)
+        if contrast(d, background) >= ratio:
+            return d
+        l -= 0.01
+    return "#000000"
+
+
+def ink(color, worst, ratio, dark, towards):
+    return ensure(color, worst, ratio, towards) if dark else deepen(color, worst, ratio)
+
+
 def settled(fill):
     if contrast("#ffffff", fill) >= 4.5 or contrast("#11111b", fill) >= 4.5:
         return fill
@@ -66,18 +98,18 @@ for name, pal in PALETTES.items():
         towards = ("#ffffff" if dark else "#000000") if high else pal["text"]
         where = f"{name}{' high contrast' if high else ''}"
         for token in ("subtext1", "subtext0", "overlay2", "overlay1", "overlay0", "green", "red", "peach"):
-            check(f"{where} {token} as text", contrast(ensure(pal[token], worst, text_ratio, towards), worst), text_ratio)
+            check(f"{where} {token} as text", contrast(ink(pal[token], worst, text_ratio, dark, towards), worst), text_ratio)
         edge = ensure(pal["overlay0"], worst, 4.5 if high else 3, towards)
         check(f"{where} a control's edge", contrast(edge, worst), 3)
         for accent in ACCENTS:
-            check(f"{where} {accent} as text", contrast(ensure(pal[accent], worst, text_ratio, towards), worst), text_ratio)
+            check(f"{where} {accent} as text", contrast(ink(pal[accent], worst, text_ratio, dark, towards), worst), text_ratio)
     light, darkest = pal["base"], PALETTES["mocha"]["crust"]
     for accent in ACCENTS:
         fill = settled(pal[accent])
         check(f"{name} text on {accent}", contrast(readable_on(fill, light, darkest), fill), 4.5)
     # Colours a wallpaper can give: the hue is free, the saturation and lightness are fitted.
     for hue in range(0, 360, 15):
-        h, s, l = hue / 60, 0.8, 0.77 if dark else 0.6
+        h, s, l = hue / 60, 0.8, 0.77
         c = (1 - abs(2 * l - 1)) * s
         x = c * (1 - abs(h % 2 - 1))
         rgb = [(c, x, 0), (x, c, 0), (0, c, x), (0, x, c), (x, 0, c), (c, 0, x)][int(h)]

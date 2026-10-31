@@ -2,32 +2,32 @@
 
 var palettes = {
     latte: {
-        rosewater: "#dc8a78",
-        flamingo: "#dd7878",
-        pink: "#ea76cb",
-        mauve: "#8839ef",
-        red: "#d20f39",
-        maroon: "#e64553",
-        peach: "#fe640b",
-        yellow: "#df8e1d",
-        green: "#40a02b",
-        teal: "#179299",
-        sky: "#04a5e5",
-        sapphire: "#209fb5",
-        blue: "#1e66f5",
-        lavender: "#7287fd",
-        text: "#4c4f69",
-        subtext1: "#5c5f77",
-        subtext0: "#6c6f85",
-        overlay2: "#7c7f93",
-        overlay1: "#8c8fa1",
-        overlay0: "#9ca0b0",
-        surface2: "#acb0be",
-        surface1: "#bcc0cc",
-        surface0: "#ccd0da",
-        base: "#eff1f5",
-        mantle: "#e6e9ef",
-        crust: "#dce0e8",
+        rosewater: "#f5e0dc",
+        flamingo: "#f2cdcd",
+        pink: "#f5c2e7",
+        mauve: "#cba6f7",
+        red: "#f38ba8",
+        maroon: "#eba0ac",
+        peach: "#fab387",
+        yellow: "#f9e2af",
+        green: "#a6e3a1",
+        teal: "#94e2d5",
+        sky: "#89dceb",
+        sapphire: "#74c7ec",
+        blue: "#89b4fa",
+        lavender: "#b4befe",
+        text: "#26262b",
+        subtext1: "#3f3f46",
+        subtext0: "#50505a",
+        overlay2: "#5c5c66",
+        overlay1: "#65656f",
+        overlay0: "#6f6f79",
+        surface2: "#b7b7bf",
+        surface1: "#cdcdd3",
+        surface0: "#dfdfe3",
+        base: "#fbfbfc",
+        mantle: "#f3f3f5",
+        crust: "#ebebee",
     },
     frappe: {
         rosewater: "#f2d5cf",
@@ -152,7 +152,7 @@ function isDark(pal) {
 function fit(color, dark) {
     var c = hsl(color);
     return dark ? fromHsl(c.h, Math.min(0.92, Math.max(0.6, c.s)), 0.77)
-                : fromHsl(c.h, Math.min(0.85, Math.max(0.55, c.s)), 0.6);
+                : fromHsl(c.h, Math.min(0.92, Math.max(0.6, c.s)), 0.77);
 }
 
 function accent(pal, name) {
@@ -217,6 +217,16 @@ function ensure(color, background, ratio, towards) {
 }
 
 // A fill some text has to read on: darkened just enough where neither black nor white would.
+// The same hue, only as dark as it takes to read on a light background.
+function deepen(color, background, ratio) {
+    var c = hsl(color);
+    for (var l = c.l; l > 0; l -= 0.01) {
+        var d = fromHsl(c.h, c.s, l);
+        if (contrast(d, background) >= ratio) return d;
+    }
+    return "#000000";
+}
+
 function settled(fill) {
     if (contrast("#ffffff", fill) >= 4.5 || contrast("#11111b", fill) >= 4.5) return fill;
     return ensure(fill, "#ffffff", 4.5, "#000000");

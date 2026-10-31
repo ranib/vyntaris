@@ -32,6 +32,7 @@ Singleton {
     readonly property string strongest: isDark ? "#ffffff" : "#000000"
     readonly property real textRatio: highContrast ? 7 : 4.5
     function ink(c) {
+        if (!isDark) return Palettes.deepen(String(c), worstSurface, textRatio);
         return Palettes.ensure(String(c), worstSurface, textRatio, highContrast ? strongest : palette.text);
     }
     readonly property color subtext1:  highContrast ? ink(palette.text) : ink(palette.subtext1)
@@ -59,16 +60,23 @@ Singleton {
         return names[name] ?? Tr.t("Custom");
     }
     readonly property color accentInk: ink(accent)
+    // The empty part of a slider: on white it stays quieter than the filled part, whose end shows the value.
+    readonly property color trackOff: isDark || highContrast ? controlEdge : palette.surface1
+    readonly property color trackOffHover: isDark || highContrast ? overlay1 : palette.surface2
+    // Text right on a picture isn't on the theme's surfaces, so it doesn't follow them.
+    readonly property color onWallpaper: "#ffffff"
+    readonly property color wallpaperVeil: isDark ? alpha(base, 0.32) : alpha("#000000", 0.22)
     function on(fill) { return Palettes.readableOn(String(fill), palette.base, Palettes.palettes.mocha.crust); }
     readonly property color textOnAccent: on(accent)
-    readonly property color accentBright: Qt.lighter(accent, 1.18)
+    readonly property color accentBright: isDark ? Qt.lighter(accent, 1.18) : accentInk
     readonly property color success:  ink(palette.green)
     readonly property color error:    ink(palette.red)
     readonly property color warning:  ink(palette.peach)
 
-    readonly property color glassTint:  crust
+    // Dark panels sink below the windows; light ones lift above them.
+    readonly property color glassTint:  isDark ? crust : base
     readonly property color glass:      glassTint
-    readonly property color glassTop:   isDark ? crust : mantle
+    readonly property color glassTop:   glassTint
     readonly property color glassRim:   alpha(text, highContrast ? 0.45 : isDark ? 0.14 : 0.16)
     readonly property color glassEdge:  isDark ? alpha("#ffffff", 0.24) : alpha(text, 0.14)
     readonly property color hairline: alpha(text, highContrast ? 0.3 : isDark ? 0.08 : 0.12)

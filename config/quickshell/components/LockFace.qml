@@ -32,6 +32,7 @@ Item {
     readonly property bool wrong: status === "wrong"
 
     function t(s) { return root.tr(s); }
+    function takeFocus() { input.forceActiveFocus(); }
     function send() {
         if (busy || !input.text) return;
         const pw = input.text;
@@ -135,7 +136,7 @@ Item {
         Text {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatDateTime(clock.date, root.timeFormat)
-            color: Theme.text
+            color: Theme.onWallpaper
             font { family: Theme.monoFamily; pixelSize: 84; weight: Font.Light }
             layer.enabled: true
             layer.effect: MultiEffect { shadowEnabled: true; shadowColor: Theme.alpha("#000000", 0.55); shadowBlur: 0.8; shadowVerticalOffset: 2 }
@@ -143,7 +144,7 @@ Item {
         Label {
             Layout.alignment: Qt.AlignHCenter
             overline: true
-            color: Theme.text
+            color: Theme.onWallpaper
             text: root.dateOf(clock.date)
             layer.enabled: true
             layer.effect: MultiEffect { shadowEnabled: true; shadowColor: Theme.alpha("#000000", 0.6); shadowBlur: 0.6; shadowVerticalOffset: 1 }

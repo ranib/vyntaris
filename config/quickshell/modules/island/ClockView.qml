@@ -91,7 +91,7 @@ Item {
                 anchors.centerIn: parent
                 name: root.activity?.icon ?? ""
                 size: (root.activity?.progress ?? -1) >= 0 ? 9 : 13
-                color: root.activity?.color ?? Theme.accentInk
+                color: Theme.ink(root.activity?.color ?? Theme.accent)
             }
             MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: root.openActivity() }
         }
@@ -103,7 +103,7 @@ Item {
             elide: Text.ElideRight
             mono: true
             font.weight: Font.DemiBold
-            color: root.activity?.paused ? Theme.overlay1 : (root.activity?.color ?? Theme.text)
+            color: root.activity?.paused ? Theme.overlay1 : (root.activity?.color ? Theme.ink(root.activity.color) : Theme.text)
             text: root.activity?.text ?? ""
             MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: root.openActivity() }
         }

@@ -82,7 +82,27 @@ Scope {
             readonly property bool primary: screen?.name === (Monitors.focused?.name ?? Quickshell.screens[0]?.name)
             color: Theme.crust
 
+            // The compositor drops the keyboard and mouse over a sleep and hands the keyboard back to
+            // what's under the pointer only when the pointer moves, so it's moved onto where it is.
+            Timer {
+                id: regain
+                property int tries: 0
+                interval: 400
+                repeat: true
+                onTriggered: {
+                    if (!LockState.locked || !surface.primary || (tries > 1 && face.windowActive) || tries >= 8) { stop(); return; }
+                    tries++;
+                    face.takeFocus();
+                    Quickshell.execDetached(["sh", "-c", 'set -- $(hyprctl cursorpos | tr -d ,); hyprctl dispatch "hl.dsp.cursor.move({ x = $1, y = $2 })"']);
+                }
+            }
+            Connections {
+                target: LockState
+                function onWoke() { regain.tries = 0; regain.restart(); }
+            }
+
             Face {
+                id: face
                 visible: surface.primary
                 active: surface.primary
                 status: root.status

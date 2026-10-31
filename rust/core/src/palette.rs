@@ -117,7 +117,7 @@ pub fn is_dark(pal: &Palette) -> bool {
 
 pub fn fit(colour: &str, dark: bool) -> String {
     let (h, s, _) = hsl(colour);
-    if dark { from_hsl(h, s.clamp(0.6, 0.92), 0.77) } else { from_hsl(h, s.clamp(0.55, 0.85), 0.6) }
+    if dark { from_hsl(h, s.clamp(0.6, 0.92), 0.77) } else { from_hsl(h, s.clamp(0.6, 0.92), 0.77) }
 }
 
 pub fn partner_of(colour: &str) -> String {

@@ -161,6 +161,16 @@ case_keyboard() {
     kill "$app" 2>/dev/null
 }
 
+# A real sleep needs a real laptop: this is what the shell does when it wakes.
+case_wake() {
+    sleep 9
+    hyprctl dispatch "hl.dsp.cursor.move({ x = 100, y = 200 })" > /dev/null; sleep 0.3
+    check "the pointer can be put back where it is" "$(hyprctl cursorpos)" "100, 200"
+    ipc lock lock; sleep 2.5; shot wake-0
+    ipc lock woke; sleep 1.5; wtype abc; sleep 0.6; shot wake-typed
+    check "the password can be typed after waking" "$(magick compare -metric AE "$S/shots/wake-0.png" "$S/shots/wake-typed.png" null: 2>&1 | cut -d" " -f1 | awk '{print ($1 > 50)}')" 1
+}
+
 case_wikinone() {
     sleep 11
     ipc wiki open; sleep 1.5; shot wiki-not-installed
@@ -197,6 +207,7 @@ run() {
     grep -rl '/usr/share/backgrounds/vyntaris' "$Q/config" "$Q/modules" | xargs sed -i "s|/usr/share/backgrounds/vyntaris|$Q/assets/wallpapers|g"
     printf '%s\n' "$3" > "$H/.config/quickshell/settings.json"
     # Nothing leaves the test: a page that would open is only written down, and the wiki can be absent.
+    sed -i 's|(Quickshell.env("XDG_RUNTIME_DIR") \|\| "/tmp") + "/shell-locked"|Quickshell.env("HOME") + "/shell-locked"|' "$Q/services/LockState.qml"
     sed -i 's|Config.launch(\["xdg-open", target\])|Quickshell.execDetached(["sh", "-c", "echo \\"$1\\" >> \\"$HOME/opened\\"", "sh", target])|' "$Q/services/ArchWiki.qml"
     [ "$1" = volume ] && sed -i 's/value: section.audio?.volume ?? 0/value: section.isInput ? 0.6 : 1.25/' "$Q/modules/island/SoundView.qml"
     [ "$1" = volume ] && sed -i 's/value: root.sink?.audio?.volume ?? 0/value: 1.25/' "$Q/modules/island/ControlView.qml"
@@ -236,7 +247,7 @@ import json,os,sys
     sleep 1
 }
 
-which="${2:-panels keyboard screenshot pointer accent startup wiki wikinone}"
+which="${2:-panels keyboard wake screenshot pointer accent startup wiki wikinone}"
 for c in $which; do
     case "$c" in
         panels) run panels 120 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
@@ -247,6 +258,7 @@ for c in $which; do
         settings) run settings 80 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         volume) run volume 50 "{\"theme\":{$BASE},\"audio\":{\"boost\":true},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         keyboard) run keyboard 70 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
+        wake) run wake 40 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         wikinone) run wikinone 40 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         startup) run startup 60 "{\"theme\":{$BASE,\"accent\":\"green\"},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
     esac

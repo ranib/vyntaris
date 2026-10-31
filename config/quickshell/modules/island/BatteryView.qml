@@ -44,7 +44,7 @@ Item {
                 mono: true
                 font.pixelSize: Theme.fontSizeHero
                 font.weight: Font.Light
-                color: root.tint
+                color: Theme.ink(root.tint)
                 text: root.b.percent + "%"
             }
 

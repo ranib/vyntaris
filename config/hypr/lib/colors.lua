@@ -37,7 +37,7 @@ function M.accent(palette, name)
         local _, _, base_l = hsl(palette.base)
         local h, s = hsl(name:sub(2))
         if base_l < 0.5 then return from_hsl(h, math.min(0.92, math.max(0.6, s)), 0.77) end
-        return from_hsl(h, math.min(0.85, math.max(0.55, s)), 0.6)
+        return from_hsl(h, math.min(0.92, math.max(0.6, s)), 0.77)
     end
     return palette[name] or palette.blue
 end

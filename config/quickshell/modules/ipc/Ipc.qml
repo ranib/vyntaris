@@ -224,6 +224,7 @@ Scope {
     IpcHandler {
         target: "lock"
         function lock(): void { LockState.lock() }
+        function woke(): void { LockState.woke() }
         function preview(): void { LockState.preview = !LockState.preview }
         function status(): string { return LockState.locked ? "locked" : "unlocked" }
     }

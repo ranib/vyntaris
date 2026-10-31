@@ -9,6 +9,7 @@ Singleton {
 
     property bool locked: false
     property bool preview: false
+    signal woke()
     Timer { running: root.preview; interval: 15000; onTriggered: root.preview = false }
     readonly property string marker: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/shell-locked"
 

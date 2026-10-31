@@ -7,7 +7,7 @@ Item {
     property url source
     property real blur: 1
     property real blurMultiplier: 0.6
-    property color veil: Theme.alpha(Theme.base, 0.32)
+    property color veil: Theme.wallpaperVeil
     property real margin: 0
     property alias cache: wall.cache
     readonly property alias status: wall.status

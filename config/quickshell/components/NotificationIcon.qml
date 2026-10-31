@@ -50,6 +50,6 @@ ClippingRectangle {
         visible: !root.hasImage && root.iconPath === ""
         name: "bell"
         size: root.size * 0.45
-        color: root.tint
+        color: Theme.ink(root.tint)
     }
 }

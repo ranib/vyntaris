@@ -1,0 +1,8 @@
+# What every install gets besides packages.txt. install-desktop picks from these, and iso/build.sh puts all of them on
+# the ISO for installing without internet, so a package named here is on both.
+BASE=(base linux sudo zsh git nano networkmanager man-db btrfs-progs vyntaris)
+UCODE=(intel-ucode amd-ucode)
+FIRMWARE=(linux-firmware-intel linux-firmware-atheros linux-firmware-broadcom linux-firmware-mediatek
+          linux-firmware-realtek linux-firmware-other linux-firmware-amd linux-firmware-cirrus linux-firmware-ti)
+FIRMWARE_NVIDIA=(linux-firmware-nvidia)
+FIRMWARE_AMD=(linux-firmware-amdgpu linux-firmware-radeon)

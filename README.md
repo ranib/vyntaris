@@ -970,7 +970,7 @@ echo 0.1.0 > VERSION && git commit -am "0.1.0" && git tag -a v0.1.0 -m 0.1.0 && 
 ```
 
 By hand: `tools/package.sh` builds `pkg/vyntaris-*.pkg.tar.zst`, `tools/publish-repo.sh` signs and publishes
-it, `iso/build.sh` builds the ISO (with the package inside, so the installer works offline), and
+it, `iso/build.sh` builds the ISO (with every package an install needs inside, so it installs without internet too: `/opt/vyntaris-offline`, used when there is no connection or the downloads keep failing), and
 `tools/site-shots.sh` takes the website's screenshots, for the website's own repository
 (`vyntaris-site`, served by Cloudflare Workers at https://vyntarisos.com/).
 

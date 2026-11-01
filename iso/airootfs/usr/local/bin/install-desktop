@@ -3,6 +3,10 @@ set -euo pipefail
 
 APPS=/usr/share/desktop-installer/packages.txt
 MNT=/mnt
+# Everything an install needs, on the ISO itself. Newer packages from the internet are better, so it's for when there's none.
+OFFLINE=/opt/vyntaris-offline
+OFFLINE_CONF=/tmp/offline-pacman.conf
+from_usb=""
 
 c_acc=$'\033[1;35m'; c_dim=$'\033[2m'; c_bold=$'\033[1m'; c_err=$'\033[1;31m'; c_off=$'\033[0m'
 step() { printf '\n%s::%s %s%s%s\n' "$c_acc" "$c_off" "$c_bold" "$*" "$c_off"; }
@@ -20,6 +24,8 @@ ask() {
 [ "$(id -u)" -eq 0 ] || die "run this as root (the live ISO logs you in as root)"
 [ -d /sys/firmware/efi ] || die "this machine booted in legacy BIOS mode; boot the USB in UEFI mode"
 [ -f "$APPS" ] || die "$APPS is missing: this script is meant for the Vyntaris ISO"
+# shellcheck source=/dev/null
+. /usr/share/desktop-installer/base-packages
 
 clear 2>/dev/null || true
 cat <<EOF
@@ -28,10 +34,22 @@ ${c_acc}
    ${c_dim}Hyprland + Quickshell, Catppuccin. Ctrl+C at any question to get a shell instead.${c_off}
 EOF
 
+offline_ready() { [ -f "$OFFLINE/offline.db.tar.gz" ]; }
+use_usb() {
+    from_usb=1
+    # The packages come with the system that is running here, so they're trusted as much as it is.
+    printf '[options]\nArchitecture = auto\nSigLevel = Never\n\n[offline]\nServer = file://%s\n' "$OFFLINE" > "$OFFLINE_CONF"
+}
+
 step "Internet"
 online() { curl -fsI --max-time 6 https://archlinux.org >/dev/null 2>&1; }
 until online; do
     note "not connected."
+    if offline_ready; then
+        answer=""
+        [ -n "${INSTALL_YES:-}" ] || read -rp "   Press Enter to install from this USB without internet, or type w to connect first: " answer
+        if [ "$answer" != w ]; then use_usb; break; fi
+    fi
     if ! nmcli -t -f TYPE device 2>/dev/null | grep -qx wifi; then
         read -rp "   Plug in a network cable and press Enter to try again… " _
         continue
@@ -44,8 +62,12 @@ until online; do
     nmcli device wifi connect "$ssid" ${pass:+password "$pass"} >/dev/null || true
     sleep 5
 done
-note "connected."
-timedatectl set-ntp true 2>/dev/null || true
+if [ -n "$from_usb" ]; then
+    note "installing from this USB; updates come once the computer has internet."
+else
+    note "connected."
+    timedatectl set-ntp true 2>/dev/null || true
+fi
 
 step "Keyboard, language, time"
 ask INSTALL_KEYMAP "Keyboard layout (us, de, fr, rs, …)" "us"
@@ -206,32 +228,42 @@ step "Base system"
 ucode=""
 grep -q GenuineIntel /proc/cpuinfo && ucode=intel-ucode
 grep -q AuthenticAMD /proc/cpuinfo && ucode=amd-ucode
-note "choosing fast mirrors…"
-fast="$(timeout 120 reflector --protocol https --age 12 --latest 25 --fastest 8 2>/dev/null | grep '^Server' || true)"
+fast=""
+if [ -z "$from_usb" ]; then
+    note "choosing fast mirrors…"
+    fast="$(timeout 120 reflector --protocol https --age 12 --latest 25 --fastest 8 2>/dev/null | grep '^Server' || true)"
+fi
 printf 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch\nServer = https://fastly.mirror.pkgbuild.com/$repo/os/$arch\n%s\n' \
     "$fast" > /etc/pacman.d/mirrorlist
-note "refreshing the package signing keys…"
-fix-keyring >/tmp/fix-keyring.log 2>&1 || {
-    note "could not refresh them, trying anyway (log: /tmp/fix-keyring.log)"
-    tail -n 5 /tmp/fix-keyring.log | sed 's/^/   /' || true
-}
+if [ -z "$from_usb" ]; then
+    note "refreshing the package signing keys…"
+    fix-keyring >/tmp/fix-keyring.log 2>&1 || {
+        note "could not refresh them, trying anyway (log: /tmp/fix-keyring.log)"
+        tail -n 5 /tmp/fix-keyring.log | sed 's/^/   /' || true
+    }
+fi
 mapfile -t apps < <(sed -e 's/#.*//' -e 's/[[:space:]]//g' "$APPS" | grep -v '^$')
-firmware=(linux-firmware-intel linux-firmware-atheros linux-firmware-broadcom linux-firmware-mediatek
-          linux-firmware-realtek linux-firmware-other linux-firmware-amd linux-firmware-cirrus linux-firmware-ti)
+firmware=("${FIRMWARE[@]}")
 for dev in /sys/bus/pci/devices/*; do
     case "$(cat "$dev/class" 2>/dev/null)" in 0x03*) ;; *) continue ;; esac
     case "$(cat "$dev/vendor" 2>/dev/null)" in
-        0x10de) firmware+=(linux-firmware-nvidia) ;;
-        0x1002) firmware+=(linux-firmware-amdgpu linux-firmware-radeon) ;;
+        0x10de) firmware+=("${FIRMWARE_NVIDIA[@]}") ;;
+        0x1002) firmware+=("${FIRMWARE_AMD[@]}") ;;
     esac
 done
 note "firmware: ${firmware[*]#linux-firmware-}"
-for try in 1 2 3 4; do
-    if pacstrap -K "$MNT" base linux "${firmware[@]}" $ucode sudo zsh git nano networkmanager \
-        man-db btrfs-progs vyntaris "${apps[@]}" 2>&1 | tee /tmp/pacstrap.log; then
+for try in 1 2 3 4 5; do
+    source_args=()
+    [ -z "$from_usb" ] || source_args=(-C "$OFFLINE_CONF")
+    if pacstrap -K "${source_args[@]}" "$MNT" "${BASE[@]}" "${firmware[@]}" $ucode "${apps[@]}" 2>&1 | tee /tmp/pacstrap.log; then
         break
     fi
-    [ "$try" = 4 ] && die "could not download the base system (log: /tmp/pacstrap.log). Open a terminal, run fix-keyring --reset, then try again"
+    if [ "$try" -ge 4 ] && [ -z "$from_usb" ] && offline_ready; then
+        note "the download keeps failing, installing from this USB instead"
+        use_usb
+        continue
+    fi
+    [ "$try" -ge 4 ] && die "could not download the base system (log: /tmp/pacstrap.log). Open a terminal, run fix-keyring --reset, then try again"
     if grep -qiE 'signature|keyring|unknown trust|could not be looked up|corrupted package' /tmp/pacstrap.log; then
         note "package signatures failed, rebuilding the keyring ($try)"
         fix-keyring --reset >/tmp/fix-keyring.log 2>&1 || tail -n 5 /tmp/fix-keyring.log | sed 's/^/   /' || true

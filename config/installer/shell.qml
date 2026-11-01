@@ -38,7 +38,7 @@ ShellRoot {
     readonly property bool hostOk: /^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/.test(host)
     readonly property bool passOk: pass.length > 0 && pass === pass2
     function canLeave(p) {
-        if (p === 1) return online || preview;
+        if (p === 1) return online || preview || offlineReady;
         if (p === 4) return userOk && hostOk && passOk;
         if (p === 5) return disk !== "" && (mode === "erase" || (diskTable === "gpt" && (mode === "free" ? freeBytes >= minRoom : part !== "")));
         return true;
@@ -78,6 +78,12 @@ ShellRoot {
     }
 
     property bool online: false
+    property bool offlineReady: false
+    Process {
+        running: true
+        command: ["test", "-f", "/opt/vyntaris-offline/offline.db.tar.gz"]
+        onExited: code => root.offlineReady = code === 0
+    }
     property bool hasWifi: false
     property var networks: []
     property string connecting: ""
@@ -574,7 +580,8 @@ ShellRoot {
                                         Label { font.weight: Font.DemiBold; text: root.online ? Tr.t("Connected") : Tr.t("Not connected") }
                                         Label {
                                             color: Theme.subtext0
-                                            text: root.online ? Tr.t("The installation downloads the newest packages, so it needs the internet.")
+                                            text: root.online ? Tr.t("The installation downloads the newest packages.")
+                                                : root.offlineReady ? Tr.t("You can go on without internet: everything is on this USB. Updates come later.")
                                                 : root.networks.some(n => n.active) ? Tr.t("Connected to Wi-Fi, waiting for the internet…")
                                                 : root.hasWifi ? Tr.t("Plug in a network cable, or pick a Wi-Fi network.") : Tr.t("No Wi-Fi here. Plug in a network cable.")
                                         }

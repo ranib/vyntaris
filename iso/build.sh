@@ -39,7 +39,7 @@ cp "$REPO/config/installer/config/Config.qml" "$REPO/config/quickshell/config/Th
 cp "$REPO"/config/quickshell/components/* "$inst/components/"
 cp -r "$REPO/config/quickshell/i18n" "$inst/"
 cp "$REPO/config/quickshell/assets/wallpapers/default.jpg" "$inst/wallpaper.jpg"
-cp "$REPO/packages.txt" "$inst/"
+cp "$REPO/packages.txt" "$ISO/base-packages" "$inst/"
 mkdir -p "$profile/airootfs/usr/share/icons"
 cp -a "$REPO/config/icons/Bibata-Modern-Ice" "$profile/airootfs/usr/share/icons/"
 
@@ -51,6 +51,20 @@ ln -sf /usr/lib/systemd/system/NetworkManager.service "$wants/multi-user.target.
 ln -sf /usr/lib/systemd/system/NetworkManager-dispatcher.service "$wants/dbus-org.freedesktop.nm-dispatcher.service"
 
 "$REPO/system/pacman-candy.sh" "$profile/pacman.conf"
+
+# Every package an install can ask for, with all it depends on, for installing without internet.
+offline="$profile/airootfs/opt/vyntaris-offline"
+mkdir -p "$offline" "$WORK/offline-db"
+{ cat "$profile/pacman.conf"; printf '\n[vyntaris]\nSigLevel = Optional TrustAll\nServer = file://%s\n' "$repo"; } > "$WORK/offline.conf"
+# shellcheck source=iso/base-packages
+. "$ISO/base-packages"
+mapfile -t apps < <(sed -e 's/#.*//' -e 's/[[:space:]]//g' "$REPO/packages.txt" | grep -v '^$')
+$SUDO pacman --config "$WORK/offline.conf" --dbpath "$WORK/offline-db" --cachedir "$offline" -Syw --noconfirm \
+    "${BASE[@]}" "${UCODE[@]}" "${FIRMWARE[@]}" "${FIRMWARE_NVIDIA[@]}" "${FIRMWARE_AMD[@]}" "${apps[@]}"
+$SUDO rm -rf "$WORK/offline-db"
+$SUDO rm -f "$offline"/*.sig
+$SUDO repo-add -q "$offline/offline.db.tar.gz" "$offline"/*.pkg.tar.*
+du -sh "$offline"
 install -Dm644 "$REPO/system/os-release" "$profile/airootfs/etc/os-release"
 grep -rl "Arch Linux" "$profile/efiboot" "$profile/grub" "$profile/syslinux" 2>/dev/null |
     xargs -r sed -i 's/Arch Linux install medium/Vyntaris/g; s/Arch Linux/Vyntaris/g' || true
@@ -70,6 +84,9 @@ sed -i \
     "$profile/profiledef.sh"
 
 echo 'kernel_params_x86_64="cow_spacesize=2G"' >> "$profile/profiledef.sh"
+# With the packages on it the system is too big to copy into memory at every boot.
+grep -rl 'archisobasedir=%INSTALL_DIR%' "$profile/efiboot" "$profile/grub" "$profile/syslinux" 2>/dev/null |
+    xargs -r sed -i 's/archisobasedir=%INSTALL_DIR%/& copytoram=n/'
 
 $SUDO mkarchiso -v -r -w "$WORK/work" -o "$OUT" "$profile"
 $SUDO chown "$(id -u):$(id -g)" "$OUT"/*.iso

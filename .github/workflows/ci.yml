@@ -48,6 +48,8 @@ jobs:
         run: tools/test-upgrade.sh
       - name: The accent is fitted alike in JavaScript, Lua and Python
         run: tools/check-colours.sh
+      - name: The Arch Wiki's search finds what is asked for
+        run: python3 tools/test-wiki-search.py
       - name: The settings index has every setting on every page (the launcher searches it)
         run: tools/settings-index.py
       - name: The translations parse and hold no text the shell no longer has (and how much of each is done)
@@ -230,7 +232,7 @@ jobs:
           df -h /mnt
           size="$(stat -c %s iso/out/*.iso)"
           echo "the ISO: $size bytes"
-          [ "$size" -lt 2147483648 ] || { echo "the ISO is over 2 GiB, more than a GitHub release takes" >&2; exit 1; }
+          [ "$size" -lt 4294967296 ] || { echo "the ISO is over 4 GiB, something has grown a lot" >&2; exit 1; }
       - name: Install it in a VM, boot the installed system, log in
         timeout-minutes: 75
         env:
@@ -243,6 +245,12 @@ jobs:
           rm -f /mnt/vm-test/disk.qcow2
           df -h /mnt
           ISO_ONLY=1 VM_DUAL=1 VM_OUT=/mnt/vm-dual tools/vm-test.sh iso/out/*.iso
+      - name: The same without internet (only the ISO's own packages)
+        timeout-minutes: 75
+        run: |
+          rm -f /mnt/vm-test/disk.qcow2
+          df -h /mnt
+          ISO_ONLY=1 VM_OFFLINE=1 VM_NO_REPAIR=1 VM_OUT=/mnt/vm-offline tools/vm-test.sh iso/out/*.iso
       - name: The VM test's logs and screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -253,6 +261,8 @@ jobs:
             /mnt/vm-test/*.log
             /mnt/vm-dual/*.png
             /mnt/vm-dual/*.log
+            /mnt/vm-offline/*.png
+            /mnt/vm-offline/*.log
           retention-days: 7
       - name: Checksum
         if: startsWith(github.ref, 'refs/tags/v') || !inputs.quick
@@ -286,7 +296,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            iso/out/*.iso
-            iso/out/SHA256SUMS
+          # The ISO is bigger than a release can hold, so it's only on dl.vyntarisos.com.
+          body: "Download the ISO: https://dl.vyntarisos.com/vyntaris-x86_64.iso"
+          files: iso/out/SHA256SUMS
           generate_release_notes: true

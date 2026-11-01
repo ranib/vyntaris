@@ -95,7 +95,7 @@ if [ "$STAGE" = all ]; then
     if [ -z "${ISO_ONLY:-}" ]; then
         "$REPO/tools/package.sh" >/dev/null
         cp "$(ls -t "$REPO"/pkg/vyntaris-*.pkg.tar.zst | head -n1)" "$REPO/iso/airootfs/usr/local/bin/install-desktop" \
-            "$REPO/packages.txt" "$OUT/current/"
+            "$REPO/packages.txt" "$REPO/iso/base-packages" "$OUT/current/"
         tar -C "$OUT/current" -czf "$OUT/current.tar.gz" .
     fi
 
@@ -108,8 +108,13 @@ if curl -fsSo /tmp/current.tar.gz http://10.0.2.2:8123/current.tar.gz; then
     rm -f /opt/vyntaris-repo/*.pkg.tar.* && cp /tmp/current/vyntaris-*.pkg.tar.zst /opt/vyntaris-repo/
     repo-add -q -R /opt/vyntaris-repo/vyntaris.db.tar.gz /opt/vyntaris-repo/vyntaris-*.pkg.tar.zst
     install -m755 /tmp/current/install-desktop /usr/local/bin/install-desktop
-    install -m644 /tmp/current/packages.txt /usr/share/desktop-installer/
+    install -m644 /tmp/current/packages.txt /tmp/current/base-packages /usr/share/desktop-installer/
     echo "using the package and installer from the host's tree"
+fi
+if [ -n "${VM_OFFLINE:-}" ]; then
+    ip route add unreachable default metric 1
+    if curl -fsI --max-time 8 https://archlinux.org >/dev/null 2>&1; then echo "the internet is still reachable"; echo "INSTALL-RESULT=9"; poweroff; fi
+    echo "no internet from here on (only the host's test files)"
 fi
 mode=erase
 if [ -n "${VM_DUAL:-}" ]; then
@@ -168,6 +173,10 @@ EOF
     result="$(grep -ao 'INSTALL-RESULT=[0-9]*' "$OUT/install.log" | tail -n1)"
     echo "   $result"
     [ "$result" = "INSTALL-RESULT=0" ] || { echo "install failed, see $OUT/install.log" >&2; exit 1; }
+    if [ -n "${VM_OFFLINE:-}" ]; then
+        grep -aq 'installing from this USB' "$OUT/install.log" || { echo "it didn't install from the ISO's own packages" >&2; exit 1; }
+        echo "   installed without internet"
+    fi
 fi
 
 boot_check() {

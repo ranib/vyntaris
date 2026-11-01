@@ -81,7 +81,7 @@ Singleton {
         const t = Theme;
         return `:root { color-scheme: ${t.isDark ? "dark" : "light"}; --wiki-base: ${t.base}; --wiki-mantle: ${t.mantle}; --wiki-crust: ${t.crust}; `
             + `--wiki-surface: ${t.surface0}; --wiki-line: ${t.surface1}; --wiki-text: ${t.text}; --wiki-soft: ${t.subtext0}; `
-            + `--wiki-accent: ${t.accent}; --wiki-on-accent: ${t.textOnAccent}; --wiki-error: ${t.error}; }`;
+            + `--wiki-accent: ${t.accent}; --wiki-ink: ${t.accentInk}; --wiki-on-accent: ${t.textOnAccent}; --wiki-error: ${t.error}; }`;
     }
 
     function install() {

@@ -1,26 +1,28 @@
 /* Over the Arch Wiki's own stylesheet, in the desktop's colours (scripts/wiki.sh sets the --wiki-* ones). */
 :root {
-    --archwiki-link-color-normal: var(--wiki-accent);
-    --archwiki-link-color-visited: var(--wiki-accent);
-    --archwiki-link-color-active: var(--wiki-accent);
+    --archwiki-link-color-normal: var(--wiki-ink);
+    --archwiki-link-color-visited: var(--wiki-ink);
+    --archwiki-link-color-active: var(--wiki-ink);
     --archwiki-link-color-new: var(--wiki-soft);
 }
 html, body, .mw-page-container, .mw-page-container-inner, .mw-content-container, .mw-body, .vector-body, #content, #mw-content-text, .vector-header-container, .mw-header, .vector-sticky-header, .vector-page-toolbar, .vector-column-start, .vector-column-end, .vector-pinnable-element, .vector-toc, .mw-footer-container, #footer, .mw-footer { background: var(--wiki-base) !important; color: var(--wiki-text) !important; }
 #archnavbar, .vector-header-container, .vector-page-toolbar, .vector-sticky-header-container, #mw-panel, #p-search, .vector-user-links, .vector-search-box, .mw-editsection, .vector-page-tools-landmark, .vector-menu-portal, .mw-portlet-lang, #p-lang-btn, .printfooter, #catlinks, .vector-dropdown, #footer-places, #footer-icons, .mw-footer-container { display: none !important; }
 .mw-page-container { max-width: none !important; padding: 0 32px !important; }
 .mw-body h1, .mw-body h2, .mw-body h3, .mw-body h4, .mw-body h5, .mw-body h6, .firstHeading { color: var(--wiki-text) !important; border-color: var(--wiki-line) !important; font-family: sans-serif !important; font-weight: 600 !important; }
-html body a, html body a:visited, html body .mw-page-container a, html body .mw-page-container a:visited, html body .mw-parser-output a, html body .mw-parser-output a.external, html body .mw-parser-output a.extiw, html body .mw-parser-output a.new, html body .vector-toc a { color: var(--wiki-accent) !important; }
+html body a, html body a:visited, html body .mw-page-container a, html body .mw-page-container a:visited, html body .mw-parser-output a, html body .mw-parser-output a.external, html body .mw-parser-output a.extiw, html body .mw-parser-output a.new, html body .vector-toc a { color: var(--wiki-ink) !important; }
 .vector-toc .vector-toc-list-item-active > .vector-toc-link, .vector-toc-link { color: var(--wiki-soft) !important; }
-.vector-toc .vector-toc-list-item-active > .vector-toc-link { color: var(--wiki-accent) !important; font-weight: 600; }
+.vector-toc .vector-toc-list-item-active > .vector-toc-link { color: var(--wiki-ink) !important; font-weight: 600; }
 pre, code, tt, kbd, samp, .mw-highlight { background: var(--wiki-mantle) !important; color: var(--wiki-text) !important; border-color: var(--wiki-line) !important; border-radius: 8px; font-family: monospace !important; }
 code { padding: 1px 5px; }
 pre { padding: 12px 14px !important; border: 1px solid var(--wiki-line) !important; }
 table, .wikitable, .wikitable > tr > th, .wikitable > tr > td, .wikitable > * > tr > th, .wikitable > * > tr > td { background: var(--wiki-mantle) !important; color: var(--wiki-text) !important; border-color: var(--wiki-line) !important; }
 .wikitable th, .wikitable > * > tr > th { background: var(--wiki-surface) !important; }
 .archwiki-template-box, .archwiki-template-meta-related-articles-start, .archwiki-template-message, .toc, .catlinks, .thumbinner, blockquote { background: var(--wiki-mantle) !important; color: var(--wiki-text) !important; border: 1px solid var(--wiki-line) !important; border-radius: 12px !important; }
-.archwiki-template-box-note { border-left: 4px solid var(--wiki-accent) !important; }
-.archwiki-template-box-tip { border-left: 4px solid var(--wiki-accent) !important; }
-.archwiki-template-box-warning { border-left: 4px solid var(--wiki-error) !important; }
+.archwiki-template-box-note, .archwiki-template-box-tip { background: color-mix(in srgb, var(--wiki-accent) 10%, var(--wiki-mantle)) !important; border-color: color-mix(in srgb, var(--wiki-accent) 45%, var(--wiki-line)) !important; }
+.archwiki-template-box-warning { background: color-mix(in srgb, var(--wiki-error) 10%, var(--wiki-mantle)) !important; border-color: color-mix(in srgb, var(--wiki-error) 45%, var(--wiki-line)) !important; }
+.archwiki-template-box > strong:first-child { border: 0 !important; margin-bottom: 0 !important; padding-bottom: 0 !important; }
+.archwiki-template-box-note > strong:first-child, .archwiki-template-box-tip > strong:first-child { color: var(--wiki-ink) !important; }
+.archwiki-template-box-warning > strong:first-child { color: var(--wiki-error) !important; }
 hr { background: var(--wiki-line) !important; }
 ::selection { background: var(--wiki-accent); color: var(--wiki-on-accent); }
 .vector-column-start, .vector-column-start *, .vector-column-end, .vector-column-end *, .vector-sticky-pinned-container, .vector-toc-landmark { background: transparent !important; }

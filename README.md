@@ -262,7 +262,7 @@ every place that needs them:
 
 - **GTK 3 and 4** (`~/.config/gtk-*.0/gtk.css`, adw-gtk3) and **Qt** (qt6ct);
 - **kitty** (`~/.config/kitty/theme.conf`, included by your `kitty.conf`, which includes Vyntaris's);
-- **Firefox** (its `userChrome.css` takes the accent from the system, live; a new window whose title reads like a sign-in floats in the middle at 520×720, since Wayland doesn't tell the compositor a popup's size) and **VS Code**
+- **Firefox** (its `userChrome.css` takes the accent from the system, live; a popup opens floating in the middle at 520×720 from its first frame; Wayland doesn't tell the compositor it is a popup, so a new window starts floating 480 wide and a full window, which won't go under 500, is sent to the tiles within a frame or two; a window with a toolbar whose title reads like a sign-in floats the same way once the title arrives) and **VS Code**
   (`rust/tools/vscode-theme`: Catppuccin's theme and its accent, the rest of your settings left alone);
 - **icons**: `rust/tools/icon-theme` makes `~/.local/share/icons/Vyntaris`, Papirus with its folders
   redrawn in the accent and the apps in their own colours. It's a theme of its own linking to Papirus's

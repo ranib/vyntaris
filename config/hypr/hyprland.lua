@@ -448,6 +448,7 @@ for _, r in ipairs({
 end
 
 local browserWindows = {}
+local popupProbeWidth, popupProbeStep, popupProbeWait = 480, 30, 450
 local signInWords = {
     "sign in", "sign-in", "signin", "log in", "log-in", "login", "authorize", "authorise", "oauth", "accounts",
     "prijav", "nalog", "anmeld", "connexion", "iniciar", "accedi", "zaloguj", "entrar",
@@ -461,11 +462,44 @@ local function looksLikeSignIn(title)
     return false
 end
 
+local function floatAsPopup(w)
+    local target = "address:" .. w.address
+    hl.dispatch(hl.dsp.window.float({ action = "enable", window = target }))
+    hl.dispatch(hl.dsp.window.resize({ x = 520, y = 720, window = target }))
+    hl.dispatch(hl.dsp.window.center({ window = target }))
+end
+
+local function sortBrowserWindow(w)
+    local target = "address:" .. w.address
+    local function animate(on) hl.dispatch(hl.dsp.window.set_prop({ prop = "no_anim", value = on and "0" or "1", window = target })) end
+    animate(false)
+    hl.dispatch(hl.dsp.window.float({ action = "enable", window = target }))
+    hl.dispatch(hl.dsp.window.resize({ x = popupProbeWidth, y = 720, window = target }))
+    hl.dispatch(hl.dsp.window.center({ window = target }))
+    local waited, check = 0, nil
+    check = hl.timer(function()
+        waited = waited + popupProbeStep
+        if not browserWindows[w.address] then
+            check:set_enabled(false)
+        elseif w.size.x > popupProbeWidth then
+            check:set_enabled(false)
+            hl.dispatch(hl.dsp.window.float({ action = "disable", window = target }))
+            animate(true)
+        elseif waited >= popupProbeWait then
+            check:set_enabled(false)
+            browserWindows[w.address] = nil
+            floatAsPopup(w)
+            animate(true)
+        end
+    end, { timeout = popupProbeStep, type = "repeat" })
+end
+
 hl.on("window.open", function(w)
-    if w.class ~= "firefox" then return end
+    if w.class ~= "firefox" or w.floating then return end
     for _, other in ipairs(hl.get_windows()) do
         if other.class == "firefox" and other.address ~= w.address then
             browserWindows[w.address] = os.time() + 5
+            sortBrowserWindow(w)
             return
         end
     end
@@ -481,10 +515,7 @@ hl.on("window.title", function(w)
     if os.time() > deadline then browserWindows[w.address] = nil; return end
     if w.floating or not looksLikeSignIn(w.title) then return end
     browserWindows[w.address] = nil
-    local target = "address:" .. w.address
-    hl.dispatch(hl.dsp.window.float({ action = "enable", window = target }))
-    hl.dispatch(hl.dsp.window.resize({ x = 520, y = 720, window = target }))
-    hl.dispatch(hl.dsp.window.center({ window = target }))
+    floatAsPopup(w)
 end)
 
 do

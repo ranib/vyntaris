@@ -154,7 +154,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.space10
-            Icon { name: "gauge"; size: 16; color: Theme.overlay1 }
+            Icon { name: Power.icon(Power.profile); size: 16; color: Theme.overlay1 }
             Label { Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight; overline: true; color: Theme.overlay1; text: Tr.t("Power") }
             Choice {
                 options: Power.order.map(p => ({ value: p, label: Power.name(p).replace(Tr.t("Power saver"), Tr.t("Saver")) }))

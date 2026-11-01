@@ -16,6 +16,11 @@ Singleton {
              : p === PowerProfile.Performance ? Tr.t("Performance") : Tr.t("Balanced"));
     }
 
+    function icon(p) {
+        return (p === PowerProfile.PowerSaver ? "power-saver"
+             : p === PowerProfile.Performance ? "power-performance" : "power-balanced");
+    }
+
     function set(p) {
         PowerProfiles.profile = p;
     }

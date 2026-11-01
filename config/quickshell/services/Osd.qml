@@ -139,7 +139,7 @@ Singleton {
         case "silent": return toggleView(Notifications.dnd ? "bell-off" : "bell", Tr.t("Notifications"), !Notifications.dnd, Tr.t("On"), Tr.t("Silent"));
         case "fnlock": return toggleView("keyboard", Tr.t("Fn lock"), Hardware.fnLock);
         case "vrr": return toggleView("refresh", Tr.t("Adaptive sync"), Hardware.vrr);
-        case "power": return { icon: "gauge", level: -1, label: Tr.t("Power mode"), value: -1, toggle: true,
+        case "power": return { icon: Power.icon(Power.profile), level: -1, label: Tr.t("Power mode"), value: -1, toggle: true,
                                text: Power.name(Power.profile), sub: "", dimmed: false };
         case "layout": return {
             icon: "keyboard",

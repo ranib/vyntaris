@@ -171,6 +171,12 @@ case_wake() {
     check "the password can be typed after waking" "$(magick compare -metric AE "$S/shots/wake-0.png" "$S/shots/wake-typed.png" null: 2>&1 | cut -d" " -f1 | awk '{print ($1 > 50)}')" 1
 }
 
+# Only what it looks like: the real power mode isn't changed.
+case_osd() {
+    sleep 11
+    shot osd-power
+}
+
 case_wikinone() {
     sleep 11
     ipc wiki open; sleep 1.5; shot wiki-not-installed
@@ -211,6 +217,7 @@ run() {
     sed -i 's|Config.launch(\["xdg-open", target\])|Quickshell.execDetached(["sh", "-c", "echo \\"$1\\" >> \\"$HOME/opened\\"", "sh", target])|' "$Q/services/ArchWiki.qml"
     [ "$1" = volume ] && sed -i 's/value: section.audio?.volume ?? 0/value: section.isInput ? 0.6 : 1.25/' "$Q/modules/island/SoundView.qml"
     [ "$1" = volume ] && sed -i 's/value: root.sink?.audio?.volume ?? 0/value: 1.25/' "$Q/modules/island/ControlView.qml"
+    [ "$1" = osd ] && sed -i 's/property string kind: ""/property string kind: "power"/; s/property bool shown: false/property bool shown: true/' "$Q/services/Osd.qml"
     [ "$1" = wikinone ] && sed -i 's|^root=.*|root=/nonexistent|' "$Q/scripts/wiki.sh"
     touch "$H/.local/state/quickshell/by-shell/vyntaris/welcome-done"
     ln -s "$HOME/.local/share/applications" "$H/.local/share/applications"
@@ -259,6 +266,7 @@ for c in $which; do
         volume) run volume 50 "{\"theme\":{$BASE},\"audio\":{\"boost\":true},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         keyboard) run keyboard 70 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         wake) run wake 40 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
+        osd) run osd 30 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         wikinone) run wikinone 40 "{\"theme\":{$BASE},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
         startup) run startup 60 "{\"theme\":{$BASE,\"accent\":\"green\"},\"bar\":{\"notchStyle\":\"slant\"}}" ;;
     esac

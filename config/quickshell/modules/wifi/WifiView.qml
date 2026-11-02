@@ -11,6 +11,9 @@ Item {
     required property var device
     property bool open: false
     property bool showHeader: true
+    property var wiredDevice: null
+    readonly property bool wiredShown: !showHeader && !asking && (wiredDevice?.connected ?? false)
+    readonly property bool wiredOnly: wiredShown && connected === null
 
     readonly property real naturalWidth: 340
     readonly property real bodyHeight: content.implicitHeight > 0 ? content.implicitHeight + 28 : 8
@@ -61,11 +64,18 @@ Item {
         active: root.open && !root.asking && root.connected !== null
     }
 
+    WifiLink {
+        id: wiredLink
+        wired: true
+        device: root.wiredDevice?.name ?? ""
+        active: root.open && root.wiredShown
+    }
+
     Timer { id: scanLinger; interval: 1500 }
     Binding {
         target: root.device
         property: "scannerEnabled"
-        value: root.open || scanLinger.running
+        value: (root.open && !root.wiredOnly) || scanLinger.running
         when: root.device !== null
     }
 
@@ -113,11 +123,29 @@ Item {
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
         }
 
+        ColumnLayout {
+            Layout.fillWidth: true
+            visible: root.wiredShown
+            spacing: Theme.space8
+
+            ConnectionSummary {
+                Layout.fillWidth: true
+                connected: true
+                name: Tr.t("Wired")
+                icon: "ethernet"
+                details: wiredLink.address
+            }
+
+            LinkStats { link: wiredLink }
+
+            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; visible: !root.wiredOnly; implicitHeight: 1; color: Theme.hairline }
+        }
+
         Label {
             Layout.fillWidth: true
             Layout.topMargin: Theme.space4
             Layout.bottomMargin: Theme.space4
-            visible: !root.asking && root.device !== null && !Networking.wifiEnabled
+            visible: !root.asking && !root.wiredOnly && root.device !== null && !Networking.wifiEnabled
             horizontalAlignment: Text.AlignHCenter
             color: Theme.overlay1
             text: Tr.t("Off")
@@ -127,7 +155,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: Theme.space4
             Layout.bottomMargin: Theme.space4
-            visible: !root.asking && (root.device === null || (Networking.wifiEnabled && root.networks.length === 0))
+            visible: !root.asking && !root.wiredOnly && (root.device === null || (Networking.wifiEnabled && root.networks.length === 0))
             spacing: Theme.space8
             Spinner { visible: root.device !== null; size: 14 }
             Label {
@@ -151,51 +179,7 @@ Item {
                 details: [link.band, link.address, root.connected?.security === WifiSecurityType.Open ? Tr.t("Open") : ""].filter(s => s).join("  ·  ")
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: Theme.space2
-                spacing: Theme.space8
-                Repeater {
-                    model: [
-                        { value: link.speed(link.down), label: Tr.t("Download"), waiting: link.down < 0 },
-                        { value: link.speed(link.up), label: Tr.t("Upload"), waiting: link.up < 0 },
-                        { value: link.ping >= 0 ? Math.round(link.ping) + " ms" : "–", label: Tr.t("Ping"), waiting: !link.ready },
-                        { value: link.rate || "–", label: Tr.t("Link"), waiting: !link.ready },
-                    ]
-                    ColumnLayout {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 1
-                        spacing: Theme.space2
-                        Item {
-                            Layout.fillWidth: true
-                            implicitHeight: statValue.implicitHeight
-                            Label {
-                                id: statValue
-                                width: parent.width
-                                visible: !parent.parent.modelData.waiting
-                                elide: Text.ElideRight
-                                mono: true
-                                font.pixelSize: Theme.fontSizeLabel
-                                font.weight: Font.DemiBold
-                                text: parent.parent.modelData.value
-                            }
-                            Spinner {
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: parent.parent.modelData.waiting
-                                size: 12
-                            }
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            elide: Text.ElideRight
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: Theme.overlay1
-                            text: parent.modelData.label
-                        }
-                    }
-                }
-            }
+            LinkStats { link: link }
 
             Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairline }
             RowLayout {
@@ -213,7 +197,7 @@ Item {
             id: list
             Layout.fillWidth: true
             implicitHeight: Math.min(contentHeight, 7 * 42)
-            visible: !root.asking && Networking.wifiEnabled && model.length > 0
+            visible: !root.asking && !root.wiredOnly && Networking.wifiEnabled && model.length > 0
             clip: true
             spacing: Theme.space2
             boundsBehavior: Flickable.StopAtBounds

@@ -5,6 +5,7 @@ Item {
     id: root
     property string device: ""
     property bool active: false
+    property bool wired: false
 
     property real down: -1
     property real up: -1
@@ -56,10 +57,11 @@ Item {
         command: ["sh", "-c",
             'read r < "/sys/class/net/$1/statistics/rx_bytes"; read t < "/sys/class/net/$1/statistics/tx_bytes"; '
             + 'echo "n=$r $t $(date +%s%3N)"; '
-            + 'echo "l=$(nmcli -g IN-USE,FREQ,RATE dev wifi list ifname "$1" --rescan no 2>/dev/null | sed -n "s/^\\*://p" | head -n1)"; '
+            + 'if [ "$2" = wired ]; then read s < "/sys/class/net/$1/speed" 2>/dev/null; [ "${s:-0}" -gt 0 ] 2>/dev/null && echo "l=:$s Mb/s"; '
+            + 'else echo "l=$(nmcli -g IN-USE,FREQ,RATE dev wifi list ifname "$1" --rescan no 2>/dev/null | sed -n "s/^\\*://p" | head -n1)"; fi; '
             + 'echo "a=$(nmcli -g IP4.ADDRESS dev show "$1" 2>/dev/null)"; '
             + 'echo "p=$(ping -n -c1 -W1 1.1.1.1 2>/dev/null | sed -n "s/.*time=\\([0-9.]*\\).*/\\1/p")"',
-            "sh", root.device]
+            "sh", root.device, root.wired ? "wired" : "wifi"]
         stdout: StdioCollector { onStreamFinished: root.parse(text) }
     }
 }

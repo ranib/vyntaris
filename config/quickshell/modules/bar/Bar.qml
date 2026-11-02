@@ -588,7 +588,8 @@ PanelWindow {
 
             Module {
                 visible: bar.wired && !bar.wifiNetwork
-                onClicked: Panels.controlOpen = !Panels.controlOpen
+                active: Panels.wifiOpen
+                onClicked: Panels.wifiOpen = !Panels.wifiOpen
                 Icon { name: "ethernet"; color: Theme.accentInk }
                 Label { font.pixelSize: Theme.fontSizeLabel; text: Tr.t("Wired") }
             }

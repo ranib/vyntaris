@@ -972,7 +972,8 @@ echo 0.1.0 > VERSION && git commit -am "0.1.0" && git tag -a v0.1.0 -m 0.1.0 && 
 By hand: `tools/package.sh` builds `pkg/vyntaris-*.pkg.tar.zst`, `tools/publish-repo.sh` signs and publishes
 it, `iso/build.sh` builds the ISO (with every package an install needs inside, so it installs without internet too: `/opt/vyntaris-offline`, used when there is no connection or the downloads keep failing), and
 `tools/site-shots.sh` takes the website's screenshots, for the website's own repository
-(`vyntaris-site`, served by Cloudflare Workers at https://vyntarisos.com/).
+(`vyntaris-site`, served by Cloudflare Workers at https://vyntarisos.com/). `tools/readme-shots.sh` takes this README's, from the tree's shell in a
+nested Hyprland, in your theme but without your name, network or place.
 
 ---
 
@@ -1029,7 +1030,7 @@ global shortcuts, without a process started in between, so the first letter type
 | `pkg/` | the package (`PKGBUILD`, `vyntaris.install`) |
 | `iso/` | the ISO (`build.sh`, on Arch's releng profile) and its console installer and repair |
 | `tools/` | packaging and publishing, the tests named above, the VM tests, `test-ui.sh` (the shell in a nested Hyprland with a real pointer and keyboard, run on a desktop), and what makes the logo, icons, sounds and wallpapers |
-| `docs/screenshots/` | the pictures in this README, from `tools/site-shots.sh` |
+| `docs/screenshots/` | the pictures in this README, from `tools/readme-shots.sh` |
 | `packages.txt` | the apps every install comes with |
 
 Vyntaris is free software under the GNU General Public License, version 3 or any later version (`LICENSE`).

@@ -185,6 +185,8 @@ jobs:
       - name: Tools
         run: pacman -Syu --noconfirm git openssh gnupg rclone
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TAG_TOKEN || github.token }}
       - name: The tag names the version in VERSION (what pacman will see)
         if: startsWith(github.ref, 'refs/tags/v')
         run: '[ "${GITHUB_REF_NAME}" = "v$(cat VERSION)" ] || { echo "tag $GITHUB_REF_NAME, but VERSION says $(cat VERSION)" >&2; exit 1; }'
@@ -296,6 +298,8 @@ jobs:
           iso="$(ls *.iso | head -n 1)"
           rclone copyto "$iso" "r2:vyntaris-downloads/$iso"
           rclone copyto "r2:vyntaris-downloads/$iso" r2:vyntaris-downloads/vyntaris-x86_64.iso
+          rclone lsf r2:vyntaris-downloads | grep -E '^vyntaris-[0-9][0-9.]*-x86_64\.iso$' | sort -V | head -n -3 |
+              while read -r old; do [ "$old" = "$iso" ] || rclone deletefile "r2:vyntaris-downloads/$old"; done
           { cat SHA256SUMS; sed "s|  $iso\$|  vyntaris-x86_64.iso|" SHA256SUMS; } > SHA256SUMS.all
           printf '%s\n' "$SIGNING_KEY" | gpg --batch --quiet --import
           gpg --batch --yes --local-user 567CCD912301A261B06DAFFFC0905C46984D9F8B --detach-sign \

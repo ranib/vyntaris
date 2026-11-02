@@ -11,10 +11,22 @@ import qs.services
 Scope {
     id: root
 
-    PolkitAgent { id: agent }
+    LazyLoader {
+        id: agentLoader
+        active: true
+        PolkitAgent {}
+    }
+    readonly property var agent: agentLoader.item
 
-    readonly property var flow: agent.flow
-    readonly property bool open: agent.isActive && flow !== null
+    Timer {
+        interval: 5000
+        repeat: true
+        running: !(root.agent?.isRegistered ?? false) && !root.open
+        onTriggered: { agentLoader.active = false; agentLoader.active = true; }
+    }
+
+    readonly property var flow: agent?.flow ?? null
+    readonly property bool open: (agent?.isActive ?? false) && flow !== null
     property bool showPassword: false
 
     function submit() {

@@ -15,7 +15,10 @@ end() {
     esac
     exit 0
 }
-asked() { case "$1" in 126|127) end cancelled ;; esac; }
+asked() {
+    grep -q 'authentication agent' "$log" && end failed
+    case "$1" in 126|127) end cancelled ;; esac
+}
 
 pkexec pacman -Syu --noconfirm >> "$log" 2>&1
 code=$?; asked "$code"

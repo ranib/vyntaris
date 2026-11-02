@@ -71,9 +71,11 @@ grep -rl "Arch Linux" "$profile/efiboot" "$profile/grub" "$profile/syslinux" 2>/
 install -Dm644 "$profile/pacman.conf" "$profile/airootfs/etc/pacman.conf"
 printf '\n[vyntaris]\nSigLevel = Optional TrustAll\nServer = file:///opt/vyntaris-repo\n' >> "$profile/airootfs/etc/pacman.conf"
 
+version="$(bsdtar -xOf "$pkgfile" .PKGINFO | sed -n 's/^pkgver = \(.*\)-[^-]*$/\1/p')"
+[ -n "$version" ] || version="$(cat "$REPO/VERSION")"
 sed -i \
     -e 's/^iso_name=.*/iso_name="vyntaris"/' \
-    -e "s/^iso_version=.*/iso_version=\"$(cat "$REPO/VERSION")\"/" \
+    -e "s/^iso_version=.*/iso_version=\"$version\"/" \
     -e 's/^iso_label=.*/iso_label="VYNTARIS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"/' \
     -e 's/^iso_application=.*/iso_application="Vyntaris live and install medium"/' \
     -e '/^file_permissions=(/a\  ["/usr/local/bin/install-desktop"]="0:0:755"' \

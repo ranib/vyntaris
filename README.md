@@ -7,7 +7,7 @@ the wallpaper picker, the window switcher and more. One accent colour and one li
 (Catppuccin) run through all of it: the shell, GTK and Qt apps, Firefox, VS Code, the terminal, the icons,
 the login screen and the boot splash.
 
-Vyntaris is at 0.2.0, a beta for early testers. Problems and ideas go to
+Vyntaris is a beta for early testers. Problems and ideas go to
 [the issue tracker](https://github.com/vyntaris/vyntaris/issues).
 
 Underneath it stays plain Arch: a rolling release from Arch's own repositories, updated with

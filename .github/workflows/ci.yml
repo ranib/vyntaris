@@ -83,6 +83,13 @@ jobs:
           v="$(tools/next-version.sh)"
           echo "version=$v" >> "$GITHUB_OUTPUT"
           [ -z "$v" ] || echo "$v" > VERSION
+      - name: Any other build is named by its tag, or by the version it would go out as
+        if: steps.version.outcome == 'skipped'
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          v="$(git describe --tags --exact-match HEAD 2>/dev/null | sed 's/^v//')"
+          [ -n "$v" ] || v="$(tools/next-version.sh)"
+          [ -z "$v" ] || echo "$v" > VERSION
       - name: Vyntaris's own programs pass their tests (rust/)
         run: cd rust && cargo test --locked --release
       - name: Build the package (as a normal user; makepkg won't run as root)

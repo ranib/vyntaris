@@ -539,7 +539,8 @@ zstd. The kernel is tuned for it in `/etc/sysctl.d/99-zram.conf`: `vm.swappiness
 rather than the 400 MB a fixed 125 would hold back on 16 GB.
 Transparent huge pages are given only to programs that ask for them (`madvise`, as on Debian and
 Ubuntu; `system/thp.conf`): with Arch's `always`, the shell's memory came in 2 MB pieces it mostly
-didn't fill, and the session held 136 MB more for nothing.
+didn't fill, and the session held 136 MB more for nothing. It's set at each start only (`w!`): a package install, in the
+installer's chroot too, would otherwise try to write `/sys` and print an error that means nothing.
 
 **An app that runs the memory out** is closed by systemd-oomd before the desktop freezes: when the apps
 (`app.slice`, where the launcher and the app keys start them) spend half their time waiting on memory for

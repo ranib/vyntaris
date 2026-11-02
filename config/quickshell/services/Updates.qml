@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.config
+import "Terminal.js" as Terminal
 
 Singleton {
     id: root
@@ -35,6 +36,7 @@ Singleton {
         if (upgrading) return;
         upgrading = true;
         lastResult = "";
+        output = [];
         Quickshell.execDetached(["systemd-run", "--user", "--quiet", "--collect", "--unit=vyntaris-upgrade",
             "--description=Updating the system", "--", Quickshell.shellPath("scripts/upgrade.sh"), aurHelper]);
         upgradeWatch.restart();
@@ -44,6 +46,22 @@ Singleton {
         Config.runInTerminal(`${cmd}; ${Config.enterToClose(true)}`);
         lastResult = "";
         recheck.restart();
+    }
+    property var output: []
+    Timer {
+        interval: 500
+        repeat: true
+        triggeredOnStart: true
+        running: root.upgrading
+        onTriggered: if (!outputRead.running) outputRead.running = true
+    }
+    Process {
+        id: outputRead
+        command: ["sh", "-c", 'f="$1/log"; [ "$(stat -c %s "$f" 2>/dev/null || echo 0)" -gt 16384 ] && echo cut; tail -c 16384 "$f" 2>/dev/null; true',
+            "sh", root.upgradeState]
+        stdout: StdioCollector {
+            onStreamFinished: root.output = Terminal.screen(text.startsWith("cut\n") ? text.slice(4).replace(/^[^\r\n\x1b]*/, "") : text, 8)
+        }
     }
     Timer { id: upgradeWatch; interval: 2000; repeat: true; onTriggered: if (!upgradeCheck.running) upgradeCheck.running = true }
     Process {

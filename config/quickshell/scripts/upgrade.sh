@@ -15,18 +15,20 @@ end() {
     esac
     exit 0
 }
+plain() { sed 's/\x1b\[[0-9;?]*[A-Za-z]//g; s/\r$//' "$log"; }
+onscreen() { script -qefc "stty cols 72 2>/dev/null; $*" /dev/null < /dev/null >> "$log" 2>&1; }
 asked() {
-    grep -q 'authentication agent' "$log" && end failed
+    plain | grep -qE 'authentication agent|AUTHENTICATING FOR' && end failed
     case "$1" in 126|127) end cancelled ;; esac
 }
 
-pkexec pacman -Syu --noconfirm >> "$log" 2>&1
+onscreen pkexec pacman -Syu --noconfirm
 code=$?; asked "$code"
-[ "$code" -eq 0 ] || end failed "$(grep -m1 -iE '^error:' "$log" | sed 's/^error: *//')"
+[ "$code" -eq 0 ] || end failed "$(plain | grep -m1 -iE '^error:' | sed 's/^error: *//')"
 
 if [ -n "$helper" ] && command -v "$helper" >/dev/null && [ -n "$("$helper" -Qua 2>/dev/null)" ]; then
     if ! pacman -Q base-devel >/dev/null 2>&1; then
-        pkexec pacman -S --needed --noconfirm base-devel >> "$log" 2>&1
+        onscreen pkexec pacman -S --needed --noconfirm base-devel
         code=$?; asked "$code"; [ "$code" -eq 0 ] || end failed "$(T "The build tools couldn't be installed.")"
     fi
     case "$helper" in

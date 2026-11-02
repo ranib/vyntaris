@@ -121,6 +121,8 @@ jobs:
           setcap -r /usr/bin/sway || true
       - name: The launcher understands plain words and money (Qt's qml, no screen)
         run: tools/test-search.sh
+      - name: An update's pacman output reads as it would in a terminal (Qt's qml, no screen)
+        run: tools/test-terminal.sh
       - name: The documents' index (PDF, Office, text) finds them by what's in them
         run: pacman -S --noconfirm --needed poppler && DOC_INDEX=/usr/lib/vyntaris/doc-index tools/test-doc-index.py
       - name: The phone link speaks KDE Connect, with a phone made up (pairing, TLS, every feature, what's kept out)

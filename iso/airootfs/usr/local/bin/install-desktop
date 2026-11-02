@@ -124,6 +124,8 @@ ask INSTALL_DISK "Install on (the disk; how much of it comes next)" ""
 [ "$(lsblk -dno TYPE "$INSTALL_DISK")" = disk ] || die "$INSTALL_DISK is a partition; pick the whole disk"
 
 ESP_TYPE=c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+XBOOTLDR_TYPE=bc13c2ff-59e6-4262-a352-b275fd6f7172
+BOOT_LABEL="Vyntaris boot"
 if [ -z "${INSTALL_MODE:-}" ]; then
     lsblk -pno NAME,SIZE,FSTYPE,LABEL "$INSTALL_DISK" | sed 's/^/   /'
     note "erase: the whole disk · free: only its free space · partition: only one partition (the rest stays)"
@@ -132,9 +134,14 @@ ask INSTALL_MODE "How (erase, free, partition)" "erase"
 case "$INSTALL_MODE" in erase|free|partition) ;; *) die "how: erase, free or partition" ;; esac
 sector="$(blockdev --getss "$INSTALL_DISK")"
 other_esp=""
+old_boots=()
 if [ "$INSTALL_MODE" != erase ]; then
     [ "$(lsblk -dno PTTYPE "$INSTALL_DISK")" = gpt ] || die "$INSTALL_DISK uses the old MBR layout (or has no partition table), and Vyntaris can't install next to it: use the whole disk, or a disk with GPT"
     other_esp="$(lsblk -lnpo NAME,PARTTYPE "$INSTALL_DISK" | awk -v t="$ESP_TYPE" 'tolower($2) == t && !e {e = $1} END {print e}')"
+    mapfile -t old_boots < <(lsblk -lnpo NAME,PARTTYPE,PARTLABEL "$INSTALL_DISK" | awk -v t="$XBOOTLDR_TYPE" -v l="$BOOT_LABEL" 'tolower($2) == t && substr($0, index($0, $3)) == l {print $1}')
+    foreign_boot="$(lsblk -lnpo NAME,PARTTYPE,PARTLABEL "$INSTALL_DISK" | awk -v t="$XBOOTLDR_TYPE" -v l="$BOOT_LABEL" 'tolower($2) == t && substr($0, index($0, $3)) != l {print $1; exit}')"
+    [ -z "$foreign_boot" ] || die "$foreign_boot is another system's boot partition, and only one can start from a disk: use another disk, or the whole disk"
+    [ "${#old_boots[@]}" = 0 ] || note "${old_boots[0]} holds the boot files of an earlier Vyntaris: they're replaced, and that Vyntaris stops starting"
     [ -n "$other_esp" ] || note "$INSTALL_DISK has no EFI partition, so Vyntaris makes its own. To start the other system, use the computer's boot menu."
     if [ "$INSTALL_MODE" = partition ]; then
         ask INSTALL_PART "Which partition (only it is erased)" ""
@@ -192,13 +199,25 @@ else
         settle
         comm -13 <(echo "$before") <(lsblk -lnpo NAME "$INSTALL_DISK" | sort) | awk 'NR == 1'
     }
+    esp=""
+    [ -z "$other_esp" ] || [ "${#old_boots[@]}" = 0 ] || { esp="${old_boots[0]}"; old_boots=("${old_boots[@]:1}"); }
+    for old in "${old_boots[@]}"; do
+        umount "$old" 2>/dev/null || true
+        wipefs -af "$old" >/dev/null
+        sgdisk -d "$(cat "/sys/class/block/$(basename "$old")/partition")" "$INSTALL_DISK" >/dev/null
+    done
+    settle
     gib=$((1073741824 / sector))
-    if [ -n "$other_esp" ]; then
-        esp="$(newpart "$first" "$((first + gib - 1))" ea00 "Vyntaris boot")"
-    else
-        esp="$(newpart "$first" "$((first + gib - 1))" ef00 EFI)"
+    root_first="$first"
+    if [ -z "$esp" ]; then
+        root_first=$((first + gib))
+        if [ -n "$other_esp" ]; then
+            esp="$(newpart "$first" "$((first + gib - 1))" ea00 "$BOOT_LABEL")"
+        else
+            esp="$(newpart "$first" "$((first + gib - 1))" ef00 EFI)"
+        fi
     fi
-    root="$(newpart "$((first + gib))" "$last" 8304 Vyntaris)"
+    root="$(newpart "$root_first" "$last" 8304 Vyntaris)"
     [ -b "$esp" ] && [ -b "$root" ] || die "the new partitions didn't show up"
     wipefs -af "$esp" "$root" >/dev/null
     mkfs.fat -F 32 -n VYNTARIS "$esp" >/dev/null
@@ -221,6 +240,7 @@ if [ -z "$other_esp" ]; then
     note "$esp → /boot, $root → / ($INSTALL_FS)"
 else
     mount --mkdir -o fmask=0077,dmask=0077 "$other_esp" "$MNT/efi"
+    rm -f "$MNT"/efi/EFI/Linux/vyntaris*.efi "$MNT"/efi/loader/entries/vyntaris*
     note "$other_esp → /efi (the other system's, it keeps it), $esp → /boot, $root → / ($INSTALL_FS)"
 fi
 
@@ -329,6 +349,21 @@ inside chown -R "$INSTALL_USER:$INSTALL_USER" "/home/$INSTALL_USER/.config"
 
 inside vyntaris-setup --user "$INSTALL_USER" ${INSTALL_AUTOLOGIN:+--autologin}
 inside runuser -u "$INSTALL_USER" -- env HOME="/home/$INSTALL_USER" LANG=C.UTF-8 vyntaris-user-setup
+
+step "Checking that it will start"
+check_uki() { grep -qa "root=UUID=$root_uuid" "$1" || die "$1 starts another root than $root: Vyntaris wouldn't come up"; }
+[ -s "$MNT/boot/EFI/Linux/vyntaris.efi" ] || die "the boot image wasn't made"
+loader_esp="$MNT/boot"
+if [ -n "$other_esp" ]; then
+    loader_esp="$MNT/efi"
+    first_boot="$(lsblk -lnpo NAME,PARTTYPE "$INSTALL_DISK" | awk -v t="$XBOOTLDR_TYPE" 'tolower($2) == t {print $1; exit}')"
+    [ "$first_boot" = "$esp" ] || die "the computer would start from $first_boot, not from $esp"
+fi
+[ -s "$loader_esp/EFI/systemd/systemd-bootx64.efi" ] || die "the boot loader isn't on the EFI partition"
+for uki in "$MNT"/boot/EFI/Linux/*.efi "$loader_esp"/EFI/Linux/*.efi; do
+    if [ -e "$uki" ]; then check_uki "$uki"; fi
+done
+note "boot loader and image in place, for $root"
 
 step "Cleaning up"
 rm -rf "$MNT/home/$INSTALL_USER/.cache" "$MNT/root/.cache"

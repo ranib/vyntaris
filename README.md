@@ -824,7 +824,7 @@ partition** (only that one is erased; at least 30 GB). Btrfs (with the subvolume
 ext4. Next to another system, Vyntaris uses that system's EFI partition only for systemd-boot (mounted on
 `/efi`), which lists both at start; its boot images go in a 1 GB boot partition of its own (XBOOTLDR, on
 `/boot`). If the disk has no EFI partition (Windows is on another disk), Vyntaris makes its own and the other
-system starts from the computer's boot menu. A disk with the old MBR layout can only be used whole. Make room in Windows first (Disk Management → Shrink volume), and with BitLocker keep its
+system starts from the computer's boot menu. Over an earlier Vyntaris, its boot partition is used again and its old boot images are removed, since that system can no longer start; another system's boot partition on the disk stops the install before anything is changed, as only one can start from a disk. At the end the installer checks that the boot loader and image are in place and start the new root. `tools/test-install-layouts.sh` installs on each of these in a VM and starts the result. A disk with the old MBR layout can only be used whole. Make room in Windows first (Disk Management → Shrink volume), and with BitLocker keep its
 recovery key at hand.
 
 On Btrfs the installer makes the subvolumes `@` (the system) and `@home`, mounted with

@@ -63,6 +63,28 @@ Singleton {
     function remove(name) { run(["user-remove", name]); }
     function setAdmin(name, on) { run(["user-admin", name, on ? "on" : "off"]); }
     function setPassword(name, password) { run(["user-password", name], password); }
+    readonly property string changer: Quickshell.env("VYNTARIS_CHANGE_PASSWORD") || "/usr/lib/vyntaris/change-password"
+    function setOwnPassword(current, password) {
+        if (busy) return;
+        busy = true;
+        failure = "";
+        own.input = current + "\n" + password;
+        own.running = true;
+    }
+    Process {
+        id: own
+        property string input: ""
+        command: [root.changer]
+        stdinEnabled: true
+        onStarted: { write(input + "\n"); input = ""; stdinEnabled = false; }
+        stderr: StdioCollector { id: ownErr }
+        onExited: code => {
+            root.busy = false;
+            own.stdinEnabled = true;
+            if (code !== 0)
+                root.failure = Tr.t("The password wasn't changed: the current one isn't right, or the new one is refused.");
+        }
+    }
     function setName(name, full) { run(["user-name", name, full]); }
 
     function nameFor(full) {

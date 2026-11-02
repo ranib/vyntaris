@@ -248,7 +248,10 @@ Settings (SUPER+I) is the shell's own, running in a process of its own (`setting
 Keyboard & mouse, Displays, Idle & power, Users, Date, time & language, Lock screen, Printers, Drivers,
 Backups, Accessibility, About. Ctrl+F searches every setting; so does the launcher, which opens Settings
 on the setting's page with the setting flashing. What needs root (users, the language) goes through
-`rust/tools/settings-admin` via pkexec, each change checked. Night light and game mode are set in the
+`rust/tools/settings-admin` via pkexec, each change checked. Your own password is changed as you, not as
+root: Settings asks for the current one too and gives both to `passwd` (`system/change-password` answers its
+prompts in a terminal of its own), and `pam_gnome_keyring` in `/etc/pam.d/passwd`, which `vyntaris-setup` adds,
+changes the login keyring's password with it, so the keyring still opens at the next login. Night light and game mode are set in the
 island, from their tiles. Help (`help.qml`) lists every shortcut, read from Hyprland itself.
 
 ---

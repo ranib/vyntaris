@@ -73,20 +73,21 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Password")
-        Button { text: passwordBox.visible ? Tr.t("Cancel") : Tr.t("Change"); onClicked: { passwordBox.visible = !passwordBox.visible; newPw.text = ""; againPw.text = ""; } }
+        Button { text: passwordBox.visible ? Tr.t("Cancel") : Tr.t("Change"); onClicked: { passwordBox.visible = !passwordBox.visible; currentPw.text = ""; newPw.text = ""; againPw.text = ""; } }
     }
     RowLayout {
         id: passwordBox
         Layout.fillWidth: true
         visible: false
         spacing: Theme.space8
+        Field { id: currentPw; Layout.fillWidth: true; secret: true; canReveal: true; placeholder: Tr.t("Current password") }
         Field { id: newPw; Layout.fillWidth: true; secret: true; canReveal: true; placeholder: Tr.t("New password") }
         Field { id: againPw; Layout.fillWidth: true; secret: true; canReveal: true; placeholder: Tr.t("Once more") }
         Button {
             primary: true
             text: Tr.t("Save")
-            active: newPw.text.length >= 4 && newPw.text === againPw.text && !Accounts.busy
-            onClicked: { Accounts.setPassword(Accounts.self.name, newPw.text); passwordBox.visible = false; }
+            active: currentPw.text !== "" && newPw.text.length >= 4 && newPw.text === againPw.text && !Accounts.busy
+            onClicked: { Accounts.setOwnPassword(currentPw.text, newPw.text); passwordBox.visible = false; currentPw.text = ""; newPw.text = ""; againPw.text = ""; }
         }
     }
     Label {

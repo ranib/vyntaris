@@ -311,8 +311,13 @@ signed_only() {
     sed -i '/^\[vyntaris\]/,/^\[/ s/^SigLevel *=.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf
 }
 
+keyring_follows_password() {
+    grep -qs pam_gnome_keyring /etc/pam.d/passwd || printf 'password\toptional\tpam_gnome_keyring.so\n' >> /etc/pam.d/passwd
+}
+
 if [ "$mode" = refresh ]; then
     install -m644 "$SHARE/os-release" /etc/os-release
+    keyring_follows_password
     signed_only
     if [ -d "$GREETER" ]; then
         greeter_files
@@ -426,6 +431,7 @@ if [ -n "$user" ]; then
 fi
 
 if [ "$autologin" = 1 ] && [ -n "$user" ]; then autologin_tty; else login_screen; fi
+keyring_follows_password
 
 if [ "$aur" = 1 ] && [ -n "$user" ] && ! command -v yay >/dev/null; then
     step "AUR helper (yay)"

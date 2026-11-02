@@ -100,7 +100,7 @@ package() {
         > "$d/usr/share/vyntaris/os-release"
 
     install -Dm755 -t "$d/usr/bin" "$r"/system/bin/*
-    install -Dm755 -t "$d/usr/lib/vyntaris" "$r/system/greeter-sync.sh" "$r/system/hypr-walls.sh" "$r/system/pacman-candy.sh" "$r/system/prime-run"
+    install -Dm755 -t "$d/usr/lib/vyntaris" "$r/system/greeter-sync.sh" "$r/system/hypr-walls.sh" "$r/system/pacman-candy.sh" "$r/system/prime-run" "$r/system/change-password"
     install -Dm755 "$r/system/snapshots.sh" "$d/usr/lib/vyntaris/snapshots"
     ln -s /etc/xdg/quickshell/vyntaris/scripts/app.sh "$d/usr/bin/vyntaris-app"
 

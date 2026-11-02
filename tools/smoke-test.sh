@@ -22,8 +22,10 @@ code_errors() {
 shell_run() {
     local name="$1" secs="$2"; shift 2
     as dbus-run-session -- env WAYLAND_DISPLAY="$display" QT_QPA_PLATFORM=wayland "$@" >"$out/$name.log" 2>&1 &
-    local pid=$!
-    sleep "$secs"
+    local pid=$! waited=0
+    while [ "$waited" -lt "$secs" ] || { [ "$waited" -lt 60 ] && ! plain "$out/$name.log" | grep -q "Configuration Loaded"; }; do
+        sleep 1; waited=$((waited + 1))
+    done
     as env WAYLAND_DISPLAY="$display" grim "$out/$name.png" >>"$out/grim.log" 2>&1 || echo "   (no screenshot, see grim.log)"
     pkill -u "$user" -f "qs " 2>/dev/null; kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
     local errs; errs="$(code_errors "$out/$name.log")"

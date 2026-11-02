@@ -40,7 +40,7 @@ ShellRoot {
     function canLeave(p) {
         if (p === 1) return online || preview || offlineReady;
         if (p === 4) return userOk && hostOk && passOk;
-        if (p === 5) return disk !== "" && (mode === "erase" || (diskTable === "gpt" && (mode === "free" ? freeBytes >= minRoom : part !== "")));
+        if (p === 5) return disk !== "" && (mode === "erase" || (diskTable === "gpt" && !foreignBoot && (mode === "free" ? freeBytes >= minRoom : part !== "")));
         return true;
     }
     function slugOf(name) {
@@ -219,16 +219,18 @@ ShellRoot {
     property string diskTable: ""
     property string probedDisk: ""
     property real freeBytes: 0
+    property bool earlierVyntaris: false
+    property bool foreignBoot: false
     readonly property real minRoom: 30e9
     readonly property var partInfo: parts.find(p => p.path === part) ?? null
-    onDiskChanged: { part = ""; parts = []; diskEsp = ""; diskTable = ""; freeBytes = 0; if (disk) partProbe.running = true; }
+    onDiskChanged: { part = ""; parts = []; diskEsp = ""; diskTable = ""; freeBytes = 0; earlierVyntaris = false; foreignBoot = false; if (disk) partProbe.running = true; }
     onModeChanged: if (disk) partProbe.running = true
     Component.onCompleted: if (disk) partProbe.running = true
     Process {
         id: partProbe
         onRunningChanged: if (running) root.probedDisk = root.disk
         onExited: if (root.disk && root.probedDisk !== root.disk) running = true
-        command: ["sh", "-c", 'lsblk -J -b -o NAME,PATH,SIZE,FSTYPE,LABEL,PARTTYPE,PTTYPE,TYPE "$1"; echo @@; '
+        command: ["sh", "-c", 'lsblk -J -b -o NAME,PATH,SIZE,FSTYPE,LABEL,PARTTYPE,PARTLABEL,PTTYPE,TYPE "$1"; echo @@; '
             + 'echo "$(sgdisk -F "$1" 2>/dev/null | tail -n1) $(sgdisk -E "$1" 2>/dev/null | tail -n1) $(blockdev --getss "$1" 2>/dev/null)"', "sh", root.disk]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -236,12 +238,16 @@ ShellRoot {
                 try {
                     const dev = JSON.parse(json).blockdevices[0];
                     const esp = "c12a7328-f81f-11d2-ba4b-00a0c93ec93b";
+                    const xbootldr = "bc13c2ff-59e6-4262-a352-b275fd6f7172";
                     const list = (dev.children ?? []).filter(c => c.type === "part").map(c => ({
                         path: c.path, size: Number(c.size), fstype: c.fstype || "", label: c.label || "",
-                        esp: (c.parttype || "").toLowerCase() === esp }));
+                        esp: (c.parttype || "").toLowerCase() === esp,
+                        boot: (c.parttype || "").toLowerCase() === xbootldr, ours: c.partlabel === "Vyntaris boot" }));
                     root.diskEsp = (list.find(p => p.esp) ?? { path: "" }).path;
                     root.diskTable = dev.pttype || "";
-                    root.parts = list.filter(p => !p.esp);
+                    root.earlierVyntaris = list.some(p => p.boot && p.ours);
+                    root.foreignBoot = list.some(p => p.boot && !p.ours);
+                    root.parts = list.filter(p => !p.esp && !p.boot);
                     const [first, last, sector] = tail.trim().split(/\s+/).map(Number);
                     root.freeBytes = root.diskTable === "gpt" && first > 0 && last > first ? (last - first + 1) * sector : 0;
                 } catch (e) {}
@@ -259,12 +265,14 @@ ShellRoot {
         return (p.label || p.fstype || p.path.replace("/dev/", "")) + "  ·  " + sizeOf(p.size);
     }
     readonly property string diskEffect: mode === "erase" ? "Everything on this disk will be erased."
-        : mode === "free" ? (freeBytes >= minRoom
-            ? Tr.t("Uses its free space (") + sizeOf(freeBytes) + Tr.t("); nothing on the disk is touched.")
+        : foreignBoot ? Tr.t("Another system's boot partition is on this disk, and only one can start from a disk: use another disk, or the whole disk.")
+        : (earlierVyntaris ? Tr.t("A Vyntaris already on this disk stops starting; its files stay.") + "  " : "")
+        + (mode === "free" ? (freeBytes >= minRoom
+            ? Tr.t("Uses its free space (") + sizeOf(freeBytes) + (earlierVyntaris ? ")." : Tr.t("); nothing on the disk is touched."))
             : Tr.t("Only ") + sizeOf(freeBytes) + Tr.t(" free; Vyntaris needs ") + sizeOf(minRoom) + Tr.t(". Make room in the other system first (Windows: Disk Management → Shrink volume)."))
         : partInfo ? Tr.t("Only ") + partName(partInfo) + " (" + part + Tr.t(") will be erased; the rest stays.")
-        : Tr.t("Pick the partition to replace.")
-    readonly property bool diskRisky: mode === "erase" || (mode === "partition" && part !== "")
+        : Tr.t("Pick the partition to replace."))
+    readonly property bool diskRisky: mode === "erase" || (mode === "partition" && part !== "") || (mode !== "erase" && (earlierVyntaris || foreignBoot))
 
     property real progress: 0
     property string stepName: ""
@@ -918,7 +926,7 @@ ShellRoot {
                                     wrapMode: Text.WordWrap
                                     color: root.diskRisky ? Theme.warning : Theme.subtext0
                                     text: (root.diskRisky ? "⚠  " : "") + root.diskEffect
-                                        + (root.mode !== "erase" && root.diskEsp !== "" ? "  At start you choose Vyntaris or the other system. If Windows uses BitLocker, keep its recovery key at hand." : "")
+                                        + (root.mode !== "erase" && root.diskEsp !== "" && !root.foreignBoot ? "  At start you choose Vyntaris or the other system. If Windows uses BitLocker, keep its recovery key at hand." : "")
                                 }
                                 RowLayout {
                                     Layout.topMargin: Theme.space6

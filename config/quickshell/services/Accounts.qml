@@ -62,7 +62,6 @@ Singleton {
     function add(name, full, admin, password) { run(["user-add", name, full, admin ? "admin" : "standard"], password); }
     function remove(name) { run(["user-remove", name]); }
     function setAdmin(name, on) { run(["user-admin", name, on ? "on" : "off"]); }
-    function setPassword(name, password) { run(["user-password", name], password); }
     readonly property string changer: Quickshell.env("VYNTARIS_CHANGE_PASSWORD") || "/usr/lib/vyntaris/change-password"
     function setOwnPassword(current, password) {
         if (busy) return;

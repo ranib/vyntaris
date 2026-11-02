@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 
 const USAGE: &str = "settings-admin user-add NAME \"FULL NAME\" admin|standard | user-remove NAME | user-admin NAME on|off \
-                     | user-password NAME | user-name NAME \"FULL NAME\" | locale LANGUAGE [FORMATS] \
+                     | user-name NAME \"FULL NAME\" | locale LANGUAGE [FORMATS] \
                      | nvidia-start boot|demand";
 
 #[derive(Debug, PartialEq)]
@@ -115,12 +115,6 @@ pub fn user_admin(sys: &mut dyn System, name: &str, on: bool) -> Result<(), Refu
     sys.run(&["gpasswd", "-d", name, "wheel"], None)
 }
 
-pub fn user_password(sys: &mut dyn System, name: &str) -> Result<(), Refused> {
-    person(sys, name)?;
-    let pw = password(sys)?;
-    sys.run(&["chpasswd"], Some(&format!("{name}:{pw}\n")))
-}
-
 pub fn user_name(sys: &mut dyn System, name: &str, full: &str) -> Result<(), Refused> {
     person(sys, name)?;
     let full = full_name(full)?;
@@ -198,7 +192,6 @@ pub fn dispatch(sys: &mut dyn System, a: &[&str]) -> Result<(), Option<Refused>>
         ["user-remove", name] => user_remove(sys, name),
         ["user-admin", name, "on"] => user_admin(sys, name, true),
         ["user-admin", name, "off"] => user_admin(sys, name, false),
-        ["user-password", name] => user_password(sys, name),
         ["user-name", name, full] => user_name(sys, name, full),
         ["locale", lang] => set_locale(sys, lang, None),
         ["locale", lang, form] => set_locale(sys, lang, Some(form)),
@@ -397,12 +390,9 @@ mod tests {
         assert_eq!(full_name("  Ana Marić "), Ok("Ana Marić".into()));
         let mut f = people();
         f.stdin = "abc\n".into();
-        assert!(user_password(&mut f, "eve").is_err(), "a password under 4");
+        assert!(user_add(&mut f, "zed", "Zed", "standard").is_err(), "a password under 4");
         assert!(user_add(&mut f, "Root!", "X", "admin").is_err());
         assert!(person(&f, "root").is_err(), "root is the system's");
-        f.stdin = "hunter22\n".into();
-        user_password(&mut f, "eve").unwrap();
-        assert_eq!(f.ran.last().unwrap(), &(vec!["chpasswd".to_string()], Some("eve:hunter22\n".to_string())));
         f.stdin = "secret\n".into();
         user_add(&mut f, "zoe", "Zoe", "admin").unwrap();
         assert_eq!(f.ran[f.ran.len() - 2].0, ["useradd", "-m", "-s", "/usr/bin/zsh", "-c", "Zoe", "-G", "wheel", "zoe"]);

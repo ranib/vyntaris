@@ -17,6 +17,10 @@ on:
         description: With the ISO, only install it, boot it and undo a bad update (no repair from the USB, no dual boot)
         type: boolean
         default: false
+      publish:
+        description: With the ISO, publish it to dl.vyntarisos.com once every test passes (never with quick)
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -268,7 +272,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || !inputs.quick
         run: cd iso/out && sha256sum *.iso > SHA256SUMS
       - name: Publish the ISO to dl.vyntarisos.com (Cloudflare R2)
-        if: startsWith(github.ref, 'refs/tags/v') || !inputs.quick
+        if: startsWith(github.ref, 'refs/tags/v') || (inputs.publish && !inputs.quick)
         env:
           SIGNING_KEY: ${{ secrets.PACKAGES_SIGNING_KEY }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}

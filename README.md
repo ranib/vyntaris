@@ -963,7 +963,9 @@ A **minor** version tag pushed by hand (`v0.1.0`, the command below), or a manua
 releasing it (`tools/vm-test.sh`): installs it in a VM, boots the installed system, logs in at its login
 screen, breaks an update for real and watches it undo itself; the installed system reports over the serial
 port (`tools/vm-check.sh`) whether its services, signing, login screen, Hyprland and shell came up without
-errors. Patch versions go out only as packages: installed systems update themselves.
+errors. A manual run puts the ISO on `dl.vyntarisos.com` only with "publish" too, and only once every test passes,
+so an ISO can be tested from any branch without going out. Patch versions go out only as packages: installed
+systems update themselves.
 
 ```sh
 echo 0.1.0 > VERSION && git commit -am "0.1.0" && git tag -a v0.1.0 -m 0.1.0 && git push --follow-tags

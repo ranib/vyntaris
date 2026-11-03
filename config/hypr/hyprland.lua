@@ -421,7 +421,8 @@ hl.window_rule({
 
 hl.window_rule({
     name   = "vyntaris-apps",
-    match  = { class = "^org\\.vyntaris\\..+$" },
+    -- Vyntaris's small windows float; the Store is an app you browse in, so it tiles like any other.
+    match  = { class = "^org\\.vyntaris\\.(Doctor|Backup|SharePicker|btop)$" },
     float  = true,
     center = true,
 })

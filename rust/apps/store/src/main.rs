@@ -81,6 +81,7 @@ struct Store {
     apps: RefCell<Vec<Value>>,
     aur: RefCell<String>,
     aur_on: Cell<bool>,
+    getting_helper: Cell<bool>,
     aur_results: RefCell<Vec<Value>>,
     aur_asked: Cell<u64>,
     foreign: RefCell<HashSet<String>>,
@@ -143,7 +144,36 @@ impl Store {
             self.aur_on.set(on);
             self.helper_shown();
             self.query_changed();
+            self.helper_if_missing();
         }
+    }
+
+    // The AUR on but no helper to build with (an ISO install tries in its chroot, often offline): get yay now, once.
+    fn helper_if_missing(self: &Rc<Self>) {
+        let missing = self.aur.borrow().is_empty();
+        if !missing || !self.aur_on.get() || self.getting_helper.get() {
+            return;
+        }
+        self.getting_helper.set(true);
+        self.say(&tr("Setting up the AUR: its helper (yay) is installed once, then searches ask the AUR too."), false);
+        let script = vyntaris_core::paths::shell_dir().join("scripts/aur-helper.sh").display().to_string();
+        let job = gio::Subprocess::newv(&[std::ffi::OsStr::new(&script)], gio::SubprocessFlags::NONE);
+        let st = self.clone();
+        glib::spawn_future_local(async move {
+            if let Ok(p) = job {
+                let _ = p.wait_future().await;
+            }
+            let helper = ["yay", "paru"].into_iter().find(|h| vyntaris_ui::which(h)).unwrap_or("");
+            *st.aur.borrow_mut() = helper.to_string();
+            st.getting_helper.set(false);
+            if helper.is_empty() {
+                st.say(&tr("The AUR's helper (yay) couldn't be installed, so the Store shows only Arch's apps. Is there internet?"), true);
+            } else {
+                st.say("", false);
+            }
+            st.helper_shown();
+            st.query_changed();
+        });
     }
 
     fn helper_shown(&self) {
@@ -655,6 +685,7 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         apps: RefCell::default(),
         aur: RefCell::default(),
         aur_on: Cell::new(vyntaris_core::settings::Settings::load().bool("apps.aur", false)),
+        getting_helper: Cell::new(false),
         aur_results: RefCell::default(),
         aur_asked: Cell::new(0),
         foreign: RefCell::default(),
@@ -764,6 +795,7 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         *s2.aur.borrow_mut() = helper.to_string();
         s2.helper_shown();
         s2.show();
+        s2.helper_if_missing();
     });
     st.show();
     STORE.with_borrow_mut(|s| *s = Some(st));

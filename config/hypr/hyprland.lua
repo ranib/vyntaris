@@ -420,20 +420,10 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name   = "vyntaris-apps",
-    -- Vyntaris's small windows float; the Store, Backup and Dr. Help are apps with a sidebar, so they tile like any other.
-    match  = { class = "^org\\.vyntaris\\.(SharePicker|btop)$" },
-    float  = true,
-    center = true,
-})
-hl.window_rule({
-    name  = "system-monitor",
-    match = { class = "^org\\.vyntaris\\.btop$" },
-    size  = "1240 780",
-})
-hl.window_rule({
-    name   = "shell-apps",
-    match  = { class = "^org\\.quickshell$" },
+    name   = "share-picker",
+    -- Vyntaris's apps (Settings, Shortcuts, Store, Backup, Dr. Help, the system monitor) tile like any other;
+    -- only the prompt asking what to share floats.
+    match  = { class = "^org\\.vyntaris\\.SharePicker$" },
     float  = true,
     center = true,
 })

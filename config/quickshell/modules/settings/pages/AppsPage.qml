@@ -2,15 +2,88 @@ import QtQuick
 import QtQuick.Layouts
 import qs.config
 import qs.components
+import Quickshell
 
 SettingsPage {
+    id: page
     pageId: "apps"
 
-    SettingsRow { title: Tr.t("Terminal"); Field { mono: true; text: Config.apps.terminal; onCommitted: t => { Config.apps.terminal = t.trim(); Config.saveSoon(); } } }
-    SettingsRow { title: Tr.t("Run in terminal"); Field { mono: true; text: Config.apps.terminalRun; onCommitted: t => { Config.apps.terminalRun = t.trim(); Config.saveSoon(); } } }
-    SettingsRow { title: Tr.t("Browser"); Field { mono: true; text: Config.apps.browser; onCommitted: t => { Config.apps.browser = t.trim(); Config.saveSoon(); } } }
-    SettingsRow { title: Tr.t("File manager"); Field { mono: true; text: Config.apps.fileManager; onCommitted: t => { Config.apps.fileManager = t.trim(); Config.saveSoon(); } } }
-    SettingsRow { title: Tr.t("Editor"); Field { mono: true; text: Config.apps.editor; onCommitted: t => { Config.apps.editor = t.trim(); Config.saveSoon(); } } }
+    // Each is picked from the installed apps of its kind, never typed.
+    property string open: ""
+    function toggle(which) { open = open === which ? "" : which; }
+    // The command an app starts with: its Exec without the %-codes, a /usr/bin path as just the name.
+    function commandOf(e) {
+        return (e.command ?? []).filter(t => !t.startsWith("%")).map((t, i) => i === 0 ? t.replace(/^\/usr\/(local\/)?bin\//, "") : t).join(" ");
+    }
+    function appsOf(category, q) {
+        const k = q.trim().toLowerCase();
+        const seen = new Set();
+        return DesktopEntries.applications.values
+            .filter(e => !e.noDisplay && (e.categories ?? []).includes(category) && (!k || e.name.toLowerCase().includes(k)))
+            .map(e => ({ value: page.commandOf(e), title: e.name, caption: page.commandOf(e) }))
+            .filter(r => r.value && !seen.has(r.value) && seen.add(r.value))
+            .sort((a, b) => a.title.localeCompare(b.title));
+    }
+    function nameOf(category, command) {
+        const e = DesktopEntries.applications.values.find(e => (e.categories ?? []).includes(category) && page.commandOf(e) === command);
+        return e ? e.name : command;
+    }
+    // How each terminal runs a command it's given ("Run in terminal" follows the terminal).
+    function runWith(term) {
+        const bin = term.split(" ")[0];
+        const known = { kitty: "kitty", foot: "foot", alacritty: "alacritty -e", ghostty: "ghostty -e", konsole: "konsole -e",
+                        "gnome-terminal": "gnome-terminal --", "kgx": "kgx --", wezterm: "wezterm start --", xterm: "xterm -e" };
+        return known[bin] ?? bin + " -e";
+    }
+
+    SettingsRow {
+        title: Tr.t("Terminal")
+        Button { icon: "terminal"; text: page.nameOf("TerminalEmulator", Config.apps.terminal); onClicked: page.toggle("terminal") }
+    }
+    SettingsPicker {
+        shown: page.open === "terminal"
+        current: Config.apps.terminal
+        results: page.appsOf("TerminalEmulator", query)
+        empty: Tr.t("Nothing by that name")
+        onPicked: v => { Config.apps.terminal = v; Config.apps.terminalRun = page.runWith(v); Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
+    }
+    SettingsRow {
+        title: Tr.t("Browser")
+        Button { icon: "globe"; text: page.nameOf("WebBrowser", Config.apps.browser); onClicked: page.toggle("browser") }
+    }
+    SettingsPicker {
+        shown: page.open === "browser"
+        current: Config.apps.browser
+        results: page.appsOf("WebBrowser", query)
+        empty: Tr.t("Nothing by that name")
+        onPicked: v => { Config.apps.browser = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
+    }
+    SettingsRow {
+        title: Tr.t("File manager")
+        Button { icon: "folder"; text: page.nameOf("FileManager", Config.apps.fileManager); onClicked: page.toggle("files") }
+    }
+    SettingsPicker {
+        shown: page.open === "files"
+        current: Config.apps.fileManager
+        results: page.appsOf("FileManager", query)
+        empty: Tr.t("Nothing by that name")
+        onPicked: v => { Config.apps.fileManager = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
+    }
+    SettingsRow {
+        title: Tr.t("Editor")
+        Button { icon: "edit"; text: page.nameOf("TextEditor", Config.apps.editor); onClicked: page.toggle("editor") }
+    }
+    SettingsPicker {
+        shown: page.open === "editor"
+        current: Config.apps.editor
+        results: page.appsOf("TextEditor", query)
+        empty: Tr.t("Nothing by that name")
+        onPicked: v => { Config.apps.editor = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
+    }
 
     SettingsSection { text: Tr.t("Store") }
     SettingsRow {

@@ -4,10 +4,36 @@ import QtQuick.Layouts
 import qs.config
 import qs.components
 import qs.services
+import Quickshell.Io
 import "../../../config/Palettes.js" as Palettes
 
 SettingsPage {
+    id: page
     pageId: "appearance"
+
+    // Which list is open under its row ("" for none): every value here is picked, none typed.
+    property string open: ""
+    function toggle(which) { open = open === which ? "" : which; }
+    readonly property var times: {
+        const out = [];
+        for (let m = 0; m < 24 * 60; m += 15) out.push(String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"));
+        return out;
+    }
+    function timeRows(q) {
+        const k = q.replace(/[^0-9]/g, "");
+        return times.filter(t => !k || t.replace(":", "").includes(k)).map(t => ({ value: t, title: t }));
+    }
+    readonly property var fonts: Qt.fontFamilies().filter(f => !f.startsWith(".") && !/emoji|^Symbols|nerd font/i.test(f))
+    property var monoFonts: []
+    Process {
+        running: true
+        command: ["fc-list", ":spacing=mono", "family"]
+        stdout: StdioCollector { onStreamFinished: page.monoFonts = [...new Set(text.split("\n").map(l => l.split(",")[0].trim()).filter(l => l && !/nerd font|^Symbols/i.test(l)))].sort((a, b) => a.localeCompare(b)) }
+    }
+    function fontRows(list, q) {
+        const k = q.trim().toLowerCase();
+        return list.filter(f => !k || f.toLowerCase().includes(k)).map(f => ({ value: f, title: f }));
+    }
 
     SettingsSection { text: Tr.t("Style") }
     SettingsRow {
@@ -26,12 +52,27 @@ SettingsPage {
     SettingsRow {
         visible: Config.theme.autoFlavor
         title: Tr.t("Light from")
-        Field { implicitWidth: 100; mono: true; text: Config.theme.lightFrom; onCommitted: t => { Config.theme.lightFrom = t.trim(); Config.saveSoon(); } }
+        Button { icon: "sun"; text: Config.theme.lightFrom; onClicked: page.toggle("light") }
+    }
+    SettingsPicker {
+        shown: Config.theme.autoFlavor && page.open === "light"
+        placeholder: Tr.t("Search…")
+        current: Config.theme.lightFrom
+        results: page.timeRows(query)
+        onPicked: v => { Config.theme.lightFrom = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
     }
     SettingsRow {
         visible: Config.theme.autoFlavor
         title: Tr.t("Dark from")
-        Field { implicitWidth: 100; mono: true; text: Config.theme.darkFrom; onCommitted: t => { Config.theme.darkFrom = t.trim(); Config.saveSoon(); } }
+        Button { icon: "moon"; text: Config.theme.darkFrom; onClicked: page.toggle("dark") }
+    }
+    SettingsPicker {
+        shown: Config.theme.autoFlavor && page.open === "dark"
+        current: Config.theme.darkFrom
+        results: page.timeRows(query)
+        onPicked: v => { Config.theme.darkFrom = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
     }
     SettingsRow {
         title: Tr.t("Accent")
@@ -80,11 +121,25 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Font")
-        Field { implicitWidth: 220; text: Config.theme.fontFamily; placeholder: "Inter"; onCommitted: t => { Config.theme.fontFamily = t.trim(); Config.saveSoon(); } }
+        Button { icon: "font"; text: Config.theme.fontFamily || "Inter"; onClicked: page.toggle("font") }
+    }
+    SettingsPicker {
+        shown: page.open === "font"
+        current: Config.theme.fontFamily || "Inter"
+        results: page.fontRows(page.fonts, query)
+        onPicked: v => { Config.theme.fontFamily = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
     }
     SettingsRow {
         title: Tr.t("Monospace font")
-        Field { implicitWidth: 220; mono: true; text: Config.theme.monoFamily; placeholder: "JetBrains Mono"; onCommitted: t => { Config.theme.monoFamily = t.trim(); Config.saveSoon(); } }
+        Button { icon: "terminal"; text: Config.theme.monoFamily || "JetBrains Mono"; onClicked: page.toggle("mono") }
+    }
+    SettingsPicker {
+        shown: page.open === "mono"
+        current: Config.theme.monoFamily || "JetBrains Mono"
+        results: page.fontRows(page.monoFonts, query)
+        onPicked: v => { Config.theme.monoFamily = v; Config.saveSoon(); page.open = ""; }
+        onClosed: page.open = ""
     }
     SettingsSection { text: Tr.t("Motion") }
     SettingsRow {

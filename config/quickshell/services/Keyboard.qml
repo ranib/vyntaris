@@ -20,6 +20,8 @@ Singleton {
 
     property var names: ({})
     property var catalog: []
+    // xkb options ({ value: "grp:alt_shift_toggle", title, group }), to pick from in Settings.
+    property var optionCatalog: []
 
     readonly property var entries: layouts.map((l, i) => ({
         layout: l, variant: variants[i],
@@ -96,7 +98,7 @@ Singleton {
         command: ["cat", "/usr/share/X11/xkb/rules/base.lst"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const names = {}, list = [];
+                const names = {}, list = [], groups = {}, opts = [];
                 let section = "";
                 for (const line of text.split("\n")) {
                     if (line.startsWith("! ")) { section = line.slice(2).trim(); continue; }
@@ -107,10 +109,15 @@ Singleton {
                     } else if (section === "variant" && (m = line.match(/^\s+(\S+)\s+(\S+):\s*(.+)$/))) {
                         names[m[2] + ":" + m[1]] = m[3].trim();
                         list.push({ layout: m[2], variant: m[1], name: m[3].trim() });
+                    } else if (section === "option" && (m = line.match(/^\s+(\S+)\s+(.+)$/))) {
+                        // Groups are named like their options but not always in the same case (Compose, compose:ralt).
+                        if (m[1].includes(":")) opts.push({ value: m[1], title: m[2].trim(), group: groups[m[1].split(":")[0].toLowerCase()] ?? "" });
+                        else groups[m[1].toLowerCase()] = m[2].trim();
                     }
                 }
                 root.names = names;
                 root.catalog = list;
+                root.optionCatalog = opts;
             }
         }
     }

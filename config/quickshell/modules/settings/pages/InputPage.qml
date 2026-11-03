@@ -8,52 +8,71 @@ SettingsPage {
     id: page
     pageId: "input"
 
-    property string layoutError: ""
-    function checkLayouts(layouts, variants) {
-        if (Object.keys(Keyboard.names).length === 0) return "";
-        const ls = layouts.split(",").map(x => x.trim()), vs = variants.split(",").map(x => x.trim());
-        for (let i = 0; i < ls.length; i++) {
-            if (!ls[i] || !(ls[i] in Keyboard.names)) return "There's no keyboard layout \u201c" + ls[i] + "\u201d (layouts are codes: us, de, rs, …)";
-            if (vs[i] && !((ls[i] + ":" + vs[i]) in Keyboard.names)) return Tr.t("The layout ") + ls[i] + Tr.t(" has no variant \u201c") + vs[i] + "\u201d";
-        }
-        return "";
-    }
+
+    // Layouts and options are picked from what xkb has, not typed as codes.
+    property string open: ""
+    function toggle(which) { open = open === which ? "" : which; }
+    readonly property var options: (Config.input.kbOptions || "").split(",").map(o => o.trim()).filter(o => o)
+    function setOptions(list) { Config.input.kbOptions = list.join(","); Config.saveSoon(); }
 
     SettingsRow {
         title: Tr.t("Keyboard layout")
-        Field {
-            mono: true
-            text: Config.input.kbLayout
-            onCommitted: t => {
-                const v = t.trim().replace(/\s*,\s*/g, ",") || "us";
-                page.layoutError = page.checkLayouts(v, Config.input.kbVariant);
-                if (page.layoutError) { text = Config.input.kbLayout; return; }
-                Config.input.kbLayout = v; Config.saveSoon();
+        ColumnLayout {
+            spacing: Theme.space6
+            Repeater {
+                model: Keyboard.entries
+                RowLayout {
+                    required property var modelData
+                    required property int index
+                    Layout.alignment: Qt.AlignRight
+                    spacing: Theme.space8
+                    Caption { visible: index === 0 && Keyboard.multiple; text: Tr.t("Default") }
+                    Label { text: modelData.name }
+                    IconButton { visible: index > 0; icon: "arrow-up"; label: Tr.t("Make default"); onClicked: Keyboard.makeDefault(index) }
+                    IconButton { visible: Keyboard.multiple; icon: "close"; label: Tr.t("Remove"); onClicked: Keyboard.remove(index) }
+                }
             }
+            Button { Layout.alignment: Qt.AlignRight; icon: "plus"; text: Tr.t("Add"); onClicked: page.toggle("layout") }
         }
+    }
+    SettingsPicker {
+        shown: page.open === "layout"
+        placeholder: Tr.t("Language")
+        results: Keyboard.search(query, 30).map(h => ({ value: h.layout + ":" + h.variant, title: h.name, caption: h.variant ? h.layout + " · " + h.variant : h.layout }))
+        empty: query.trim() ? Tr.t("Nothing by that name") : ""
+        onPicked: v => { const [l, vr] = v.split(":"); Keyboard.add(l, vr); page.open = ""; }
+        onClosed: page.open = ""
     }
     SettingsRow {
-        title: Tr.t("Layout variant")
-        Field {
-            mono: true
-            text: Config.input.kbVariant
-            onCommitted: t => {
-                const v = t.trim().replace(/\s*,\s*/g, ",");
-                page.layoutError = page.checkLayouts(Config.input.kbLayout, v);
-                if (page.layoutError) { text = Config.input.kbVariant; return; }
-                Config.input.kbVariant = v; Config.saveSoon();
+        title: Tr.t("Options")
+        RowLayout {
+            spacing: Theme.space8
+            Caption {
+                Layout.maximumWidth: 260
+                elide: Text.ElideRight
+                text: page.options.length === 0 ? Tr.t("None") : page.options.map(o => Keyboard.optionCatalog.find(c => c.value === o)?.title ?? o).join(", ")
             }
+            Button { icon: "keyboard"; text: Tr.t("Change"); onClicked: page.toggle("options") }
         }
     }
-    Label {
-        visible: page.layoutError !== ""
-        Layout.fillWidth: true
-        wrapMode: Text.Wrap
-        color: Theme.error
-        font.pixelSize: Theme.fontSizeSmall
-        text: page.layoutError
+    SettingsPicker {
+        shown: page.open === "options"
+        maxRows: 8
+        currents: page.options
+        results: {
+            const k = query.trim().toLowerCase();
+            return Keyboard.optionCatalog
+                .filter(c => !k || c.title.toLowerCase().includes(k) || c.group.toLowerCase().includes(k) || c.value.includes(k))
+                .map((c, i) => ({ c: c, i: i, on: page.options.includes(c.value) }))
+                .sort((a, b) => (b.on - a.on) || (a.i - b.i))
+                .map(x => x.c)
+                .slice(0, 60)
+                .map(c => ({ value: c.value, title: c.title, caption: c.group }));
+        }
+        // Several can be on: picking one turns it on or off, and the list stays open.
+        onPicked: v => page.setOptions(page.options.includes(v) ? page.options.filter(o => o !== v) : page.options.concat([v]))
+        onClosed: page.open = ""
     }
-    SettingsRow { title: Tr.t("Options"); Field { mono: true; text: Config.input.kbOptions; onCommitted: t => { Config.input.kbOptions = t.trim(); Config.saveSoon(); } } }
     SettingsSection { text: Tr.t("Mouse and touchpad") }
     SettingsRow {
         title: Tr.t("Pointer speed")

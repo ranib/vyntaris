@@ -19,9 +19,9 @@ depends=(
     poppler ffmpegthumbnailer qt6-multimedia qt6-multimedia-ffmpeg ripgrep
     wtype openssl
     gtk4 libadwaita libheif btop
+    arch-wiki-docs  # the Arch Wiki without internet (SUPER+SHIFT+H, or ? in the launcher), there from the start
 )
 optdepends=(
-    'arch-wiki-docs: the Arch Wiki without internet (SUPER+SHIFT+H, or ? in the launcher)'
     'thunar: files (SUPER+E)'
     'firefox: web browser (SUPER+B)'
     'code: code editor (SUPER+C)'

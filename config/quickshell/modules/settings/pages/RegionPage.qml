@@ -125,12 +125,44 @@ SettingsPage {
 
     SettingsRow {
         title: Tr.t("Birthday")
-        Field {
-            implicitWidth: 140
-            mono: true
-            placeholder: Tr.t("DD.MM.YYYY")
-            text: Config.lifeText()
-            onCommitted: t => Config.setBirthday(t)
+        RowLayout {
+            spacing: Theme.space8
+            IconButton { visible: Config.life.birthday !== ""; icon: "close"; label: Tr.t("Remove"); onClicked: { Config.setBirthday(""); page.open = ""; } }
+            Button { icon: "calendar"; text: Config.lifeText() || Tr.t("Not set"); onClicked: { page.birthYear = 0; page.toggle("birthday"); } }
+        }
+    }
+    // Picked, not typed: the year from a list, then the day on a calendar.
+    property int birthYear: 0
+    readonly property date born: /^\d{4}-\d{2}-\d{2}$/.test(Config.life.birthday) ? new Date(Config.life.birthday + "T00:00:00") : new Date(NaN)
+    SettingsPicker {
+        shown: page.open === "birthday" && page.birthYear === 0
+        current: isNaN(page.born.getTime()) ? "" : String(page.born.getFullYear())
+        results: {
+            const now = new Date().getFullYear(), k = query.replace(/[^0-9]/g, ""), out = [];
+            for (let y = now; y >= 1910; y--) if (!k || String(y).includes(k)) out.push({ value: String(y), title: String(y) });
+            return out;
+        }
+        onPicked: v => page.birthYear = +v
+        onClosed: page.open = ""
+    }
+    MonthCalendar {
+        id: birthCalendar
+        Layout.fillWidth: true
+        Layout.maximumWidth: implicitWidth
+        visible: page.open === "birthday" && page.birthYear > 0
+        property bool armed: false
+        onVisibleChanged: {
+            if (!visible) { armed = false; return; }
+            const had = !isNaN(page.born.getTime()) && page.born.getFullYear() === page.birthYear;
+            year = page.birthYear;
+            month = had ? page.born.getMonth() : 0;
+            picked = had ? page.born : new Date(NaN);
+            armed = true;
+        }
+        onPickedChanged: {
+            if (!armed || isNaN(picked.getTime())) return;
+            Config.setBirthday(picked.getDate() + "." + (picked.getMonth() + 1) + "." + picked.getFullYear());
+            page.open = "";
         }
     }
 

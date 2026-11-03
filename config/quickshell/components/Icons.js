@@ -42,6 +42,8 @@ var material = {
     "close": "close",
     "check": "check",
     "plus": "add",
+    "edit": "edit",
+    "font": "text_fields",
     "minus": "remove",
     "info": "info",
     "alert": "warning",

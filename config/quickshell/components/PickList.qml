@@ -5,6 +5,8 @@ import qs.config
 ListView {
     id: root
     property string current
+    // Picking several: each of these is marked as chosen too.
+    property var chosenValues: []
     property int maxRows: 6
     readonly property real rowHeight: 42
     signal picked(string value)
@@ -18,7 +20,7 @@ ListView {
     delegate: PanelSurface {
         id: row
         required property var modelData
-        readonly property bool chosen: modelData.value === root.current
+        readonly property bool chosen: modelData.value === root.current || root.chosenValues.indexOf(modelData.value) >= 0
         required property int index
         width: root.width
         height: root.rowHeight

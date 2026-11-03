@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import qs.config
 import qs.components
 import qs.services
+import Quickshell
+import QtQuick.Dialogs
 
 SettingsPage {
     pageId: "wallpaper"
@@ -13,7 +15,19 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Folder")
-        Field { implicitWidth: 300; mono: true; text: Config.wallpaper.directory; onCommitted: t => { Config.wallpaper.directory = t.trim(); Config.saveSoon(); } }
+        Button { icon: "folder"; text: Config.wallpaper.directory.replace(/^~\//, ""); onClicked: folderDialog.open() }
+    }
+    // Picked, not typed: the system's folder chooser, starting in the folder it is now.
+    FolderDialog {
+        id: folderDialog
+        title: Tr.t("Folder")
+        currentFolder: "file://" + Config.wallpaper.directory.replace(/^~/, Quickshell.env("HOME"))
+        onAccepted: {
+            const path = decodeURIComponent(String(selectedFolder).replace(/^file:\/\//, ""));
+            const home = Quickshell.env("HOME");
+            Config.wallpaper.directory = path === home ? "~" : path.startsWith(home + "/") ? "~" + path.slice(home.length) : path;
+            Config.saveSoon();
+        }
     }
     SettingsRow {
         title: Tr.t("Fit")

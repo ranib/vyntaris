@@ -523,14 +523,6 @@ Scope {
                                             onPicked: v => { Config.theme.animationStyle = v; root.changed(); }
                                         }
                                     }
-                                    OptionRow {
-                                        icon: "windows"; title: Tr.t("Windows open")
-                                        Choice {
-                                            options: [{ value: "slidevert", label: Tr.t("Rise") }, { value: "popin", label: Tr.t("Pop") }, { value: "fade", label: Tr.t("Fade") }]
-                                            current: Config.theme.windowAnimation
-                                            onPicked: v => { Config.theme.windowAnimation = v; root.changed(); }
-                                        }
-                                    }
                                     Item { Layout.fillHeight: true }
                                 }
 

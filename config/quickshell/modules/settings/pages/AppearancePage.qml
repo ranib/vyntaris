@@ -6,7 +6,6 @@ import qs.components
 import qs.services
 import Quickshell.Io
 import "../../../config/Palettes.js" as Palettes
-import "../../../config/Motion.js" as Motion
 
 SettingsPage {
     id: page
@@ -53,9 +52,10 @@ SettingsPage {
     SettingsRow {
         visible: Config.theme.autoFlavor
         title: Tr.t("Light from")
-        Button { icon: "sun"; text: Config.theme.lightFrom; onClicked: page.toggle("light") }
+        Button { id: lightButton; icon: "sun"; text: Config.theme.lightFrom; onClicked: page.toggle("light") }
     }
     SettingsPicker {
+        anchor: lightButton
         shown: Config.theme.autoFlavor && page.open === "light"
         placeholder: Tr.t("Search…")
         current: Config.theme.lightFrom
@@ -66,9 +66,10 @@ SettingsPage {
     SettingsRow {
         visible: Config.theme.autoFlavor
         title: Tr.t("Dark from")
-        Button { icon: "moon"; text: Config.theme.darkFrom; onClicked: page.toggle("dark") }
+        Button { id: darkButton; icon: "moon"; text: Config.theme.darkFrom; onClicked: page.toggle("dark") }
     }
     SettingsPicker {
+        anchor: darkButton
         shown: Config.theme.autoFlavor && page.open === "dark"
         current: Config.theme.darkFrom
         results: page.timeRows(query)
@@ -122,9 +123,10 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Font")
-        Button { icon: "font"; text: Config.theme.fontFamily || "Inter"; onClicked: page.toggle("font") }
+        Button { id: fontButton; icon: "font"; text: Config.theme.fontFamily || "Inter"; onClicked: page.toggle("font") }
     }
     SettingsPicker {
+        anchor: fontButton
         shown: page.open === "font"
         current: Config.theme.fontFamily || "Inter"
         results: page.fontRows(page.fonts, query)
@@ -133,9 +135,10 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Monospace font")
-        Button { icon: "terminal"; text: Config.theme.monoFamily || "JetBrains Mono"; onClicked: page.toggle("mono") }
+        Button { id: monoButton; icon: "terminal"; text: Config.theme.monoFamily || "JetBrains Mono"; onClicked: page.toggle("mono") }
     }
     SettingsPicker {
+        anchor: monoButton
         shown: page.open === "mono"
         current: Config.theme.monoFamily || "JetBrains Mono"
         results: page.fontRows(page.monoFonts, query)
@@ -168,42 +171,24 @@ SettingsPage {
     ]
     SettingsRow {
         title: Tr.t("Animation style")
-        Button {
+        Button { id: styleButton;
             icon: "sliders"
             text: page.styles.find(st => st.value === Config.theme.animationStyle)?.title ?? Config.theme.animationStyle
             onClicked: page.toggle("style")
         }
     }
     SettingsPicker {
+        anchor: styleButton
         shown: page.open === "style"
         maxRows: 7
         current: Config.theme.animationStyle
         results: { const k = query.trim().toLowerCase(); return page.styles.filter(st => !k || st.title.toLowerCase().includes(k) || st.caption.toLowerCase().includes(k)); }
         onPicked: v => {
             Config.theme.animationStyle = v;
-            // A preset comes with how its windows open and workspaces switch; both can be changed below after.
-            const p = Motion.presets[v];
-            if (p) { Config.theme.windowAnimation = p.windows; Config.theme.workspaceAnimation = p.workspaces; }
             Config.saveSoon();
             page.open = "";
         }
         onClosed: page.open = ""
-    }
-    SettingsRow {
-        title: Tr.t("Windows open")
-        Choice {
-            options: [{ value: "slidevert", label: Tr.t("Rise") }, { value: "popin", label: Tr.t("Pop") }, { value: "fade", label: Tr.t("Fade") }]
-            current: Config.theme.windowAnimation
-            onPicked: v => { Config.theme.windowAnimation = v; Config.saveSoon(); }
-        }
-    }
-    SettingsRow {
-        title: Tr.t("Workspace switch")
-        Choice {
-            options: [{ value: "slidevert", label: Tr.t("Vertical") }, { value: "slide", label: Tr.t("Sideways") }, { value: "fade", label: Tr.t("Fade") }]
-            current: Config.theme.workspaceAnimation
-            onPicked: v => { Config.theme.workspaceAnimation = v; Config.saveSoon(); }
-        }
     }
     SettingsSection { text: Tr.t("Sound") }
     SettingsRow {

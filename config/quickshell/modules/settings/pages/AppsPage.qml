@@ -11,9 +11,10 @@ SettingsPage {
     // Each is picked from the installed apps of its kind, never typed.
     property string open: ""
     function toggle(which) { open = open === which ? "" : which; }
-    // The command an app starts with: its Exec without the %-codes, a /usr/bin path as just the name.
+    // The command an app starts with: its Exec without the %-codes, the program by its name (/usr/lib/firefox/firefox
+    // is firefox, as the setting has it).
     function commandOf(e) {
-        return (e.command ?? []).filter(t => !t.startsWith("%")).map((t, i) => i === 0 ? t.replace(/^\/usr\/(local\/)?bin\//, "") : t).join(" ");
+        return (e.command ?? []).filter(t => !t.startsWith("%")).map((t, i) => i === 0 ? t.replace(/^.*\//, "") : t).join(" ");
     }
     function appsOf(category, q) {
         const k = q.trim().toLowerCase();
@@ -38,9 +39,10 @@ SettingsPage {
 
     SettingsRow {
         title: Tr.t("Terminal")
-        Button { icon: "terminal"; text: page.nameOf("TerminalEmulator", Config.apps.terminal); onClicked: page.toggle("terminal") }
+        Button { id: terminalButton; icon: "terminal"; text: page.nameOf("TerminalEmulator", Config.apps.terminal); onClicked: page.toggle("terminal") }
     }
     SettingsPicker {
+        anchor: terminalButton
         shown: page.open === "terminal"
         current: Config.apps.terminal
         results: page.appsOf("TerminalEmulator", query)
@@ -50,9 +52,10 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Browser")
-        Button { icon: "globe"; text: page.nameOf("WebBrowser", Config.apps.browser); onClicked: page.toggle("browser") }
+        Button { id: browserButton; icon: "globe"; text: page.nameOf("WebBrowser", Config.apps.browser); onClicked: page.toggle("browser") }
     }
     SettingsPicker {
+        anchor: browserButton
         shown: page.open === "browser"
         current: Config.apps.browser
         results: page.appsOf("WebBrowser", query)
@@ -62,9 +65,10 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("File manager")
-        Button { icon: "folder"; text: page.nameOf("FileManager", Config.apps.fileManager); onClicked: page.toggle("files") }
+        Button { id: filesButton; icon: "folder"; text: page.nameOf("FileManager", Config.apps.fileManager); onClicked: page.toggle("files") }
     }
     SettingsPicker {
+        anchor: filesButton
         shown: page.open === "files"
         current: Config.apps.fileManager
         results: page.appsOf("FileManager", query)
@@ -74,9 +78,10 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Editor")
-        Button { icon: "edit"; text: page.nameOf("TextEditor", Config.apps.editor); onClicked: page.toggle("editor") }
+        Button { id: editorButton; icon: "edit"; text: page.nameOf("TextEditor", Config.apps.editor); onClicked: page.toggle("editor") }
     }
     SettingsPicker {
+        anchor: editorButton
         shown: page.open === "editor"
         current: Config.apps.editor
         results: page.appsOf("TextEditor", query)

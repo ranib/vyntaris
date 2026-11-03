@@ -23,6 +23,7 @@ for _, path in ipairs(sources) do
                 main = curve(body, "main"), open = curve(body, "open"), close = curve(body, "close"),
                 move = curve(body, "move"), workspace = curve(body, "workspace"),
                 speed = tonumber(body:match("speed:%s*(-?[%d.]+)")) or 1,
+                windows = body:match('windows:%s*"([^"]+)"'), workspaces = body:match('workspaces:%s*"([^"]+)"'),
             }
             if p.main and p.open and p.close and p.move and p.workspace then presets[name] = p end
         end

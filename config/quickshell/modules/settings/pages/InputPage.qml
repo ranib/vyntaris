@@ -32,10 +32,11 @@ SettingsPage {
                     IconButton { visible: Keyboard.multiple; icon: "close"; label: Tr.t("Remove"); onClicked: Keyboard.remove(index) }
                 }
             }
-            Button { Layout.alignment: Qt.AlignRight; icon: "plus"; text: Tr.t("Add"); onClicked: page.toggle("layout") }
+            Button { id: layoutButton; Layout.alignment: Qt.AlignRight; icon: "plus"; text: Tr.t("Add"); onClicked: page.toggle("layout") }
         }
     }
     SettingsPicker {
+        anchor: layoutButton
         shown: page.open === "layout"
         placeholder: Tr.t("Language")
         results: Keyboard.search(query, 30).map(h => ({ value: h.layout + ":" + h.variant, title: h.name, caption: h.variant ? h.layout + " · " + h.variant : h.layout }))
@@ -52,10 +53,11 @@ SettingsPage {
                 elide: Text.ElideRight
                 text: page.options.length === 0 ? Tr.t("None") : page.options.map(o => Keyboard.optionCatalog.find(c => c.value === o)?.title ?? o).join(", ")
             }
-            Button { icon: "keyboard"; text: Tr.t("Change"); onClicked: page.toggle("options") }
+            Button { id: optionsButton; icon: "keyboard"; text: Tr.t("Change"); onClicked: page.toggle("options") }
         }
     }
     SettingsPicker {
+        anchor: optionsButton
         shown: page.open === "options"
         maxRows: 8
         currents: page.options

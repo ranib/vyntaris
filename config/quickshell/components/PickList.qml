@@ -11,6 +11,11 @@ ListView {
     readonly property real rowHeight: 42
     signal picked(string value)
 
+    // Opened on the one chosen, wherever it is in the list.
+    function showChosen() {
+        const i = (model ?? []).findIndex ? model.findIndex(r => r.value === current) : -1;
+        if (i >= 0) positionViewAtIndex(i, ListView.Center); else positionViewAtBeginning();
+    }
     Layout.fillWidth: true
     implicitHeight: Math.min(count, maxRows) * rowHeight
     clip: true

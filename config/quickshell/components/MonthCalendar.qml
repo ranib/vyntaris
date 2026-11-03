@@ -136,7 +136,8 @@ Item {
         Caption {
             Layout.fillWidth: true
             Layout.topMargin: Theme.space2
-            visible: !root.same(root.picked, root.today)
+            // Nothing picked yet (an invalid date, as for a birthday not set) says nothing.
+            visible: !isNaN(root.picked.getTime()) && !root.same(root.picked, root.today)
             horizontalAlignment: Text.AlignHCenter
             text: {
                 const d = Math.round((root.picked - root.today) / 86400000);

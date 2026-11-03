@@ -3,11 +3,10 @@ import QtQuick.Layouts
 import qs.config
 import qs.components
 
-// A setting chosen from a list rather than typed: a search over `results` ({ value, title, caption }), opened
-// under its row while `shown`. Picking several (`currents`) toggles each instead of closing.
-ColumnLayout {
+// A setting chosen from a list rather than typed: a search over `results` ({ value, title, caption }) in a dropdown
+// from `anchor`, its button, while `shown`. Picking several (`currents`) toggles each and leaves it open.
+Dropdown {
     id: picker
-    property bool shown: false
     property string placeholder: Tr.t("Search…")
     property string current
     property var currents: []
@@ -16,19 +15,18 @@ ColumnLayout {
     property int maxRows: 6
     readonly property alias query: search.text
     signal picked(string value)
-    signal closed()
-    Layout.fillWidth: true
-    visible: shown
-    spacing: Theme.space8
-    onVisibleChanged: if (visible) { search.text = ""; search.input.forceActiveFocus(); }
+
+    onOpened: { search.text = ""; search.input.forceActiveFocus(); list.showChosen(); }
+
     SearchField {
         id: search
         Layout.fillWidth: true
         placeholder: picker.placeholder
-        input.Keys.onEscapePressed: picker.closed()
+        input.Keys.onEscapePressed: picker.close()
         onAccepted: if (picker.results.length) picker.picked(picker.results[0].value)
     }
     PickList {
+        id: list
         current: picker.current
         chosenValues: picker.currents
         maxRows: picker.maxRows

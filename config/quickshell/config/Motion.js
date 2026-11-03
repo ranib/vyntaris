@@ -3,9 +3,9 @@
 // The motion styles beyond Vyntaris's own three (bouncy, smooth, snappy), one table for both sides: Hyprland reads it
 // (config/hypr/lib/motion.lua) for windows, workspaces and layers, and Theme.qml for the shell's panels and island.
 // Their names and what they're like are in Settings (AppearancePage.qml), to be translated.
-// Curves are cubic beziers [x1, y1, x2, y2]: main (fades, the shell), open, close, move (windows dragged or tiled), workspace. speed scales Vyntaris's own durations (more is quicker). windows and workspaces are what picking
-// it sets "Windows open" and "Workspace switch" to (Config.theme.windowAnimation, workspaceAnimation); both can be
-// changed after. Keep each preset on one line: the Lua side reads them with patterns, not a JSON parser.
+// Curves are cubic beziers [x1, y1, x2, y2]: main (fades, the shell), open, close, move (windows dragged or tiled),
+// workspace. speed scales Vyntaris's own durations (more is quicker). windows and workspaces are how windows open
+// and workspaces switch with it. Keep each preset on one line: the Lua side reads them with patterns, not JSON.
 var presets = {
     classic:  { main: [0.05, 0.9, 0.1, 1.05],  open: [0.05, 0.9, 0.1, 1.05], close: [0.3, 0, 0.8, 0.15],  move: [0.05, 0.9, 0.1, 1.05],  workspace: [0.05, 0.9, 0.1, 1.05], speed: 0.9,  windows: "popin",     workspaces: "slide" },
     glide:    { main: [0.05, 0.9, 0.1, 1.05],  open: [0.1, 1.1, 0.1, 1.1],   close: [0.3, -0.3, 0, 1],    move: [0.05, 0.9, 0.1, 1.05],  workspace: [0.05, 0.9, 0.1, 1.05], speed: 0.9,  windows: "slide",     workspaces: "slide" },

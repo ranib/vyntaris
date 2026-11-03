@@ -186,8 +186,6 @@ Singleton {
                 property int fontSize: 13
                 property real animationSpeed: 1.5
                 property string animationStyle: "snappy"
-                property string windowAnimation: "slidevert"
-                property string workspaceAnimation: "slidevert"
 
                 property bool syncApps: true
                 property string gtkThemeDark: "adw-gtk3-dark"

@@ -18,37 +18,11 @@ SettingsPage {
     property date now: new Date()
     Timer { interval: 1000; repeat: true; running: page.visible; onTriggered: page.now = new Date() }
 
-    component Picker: ColumnLayout {
-        id: picker
+    // Region's lists drop down from their buttons like every other setting's (SettingsPicker).
+    component Picker: SettingsPicker {
         property string which
-        property string placeholder
-        property string current
-        property var results: []
-        property string empty: ""
-        readonly property alias query: search.text
-        signal picked(string value)
-        Layout.fillWidth: true
-        visible: page.open === which
-        spacing: Theme.space8
-        onVisibleChanged: if (visible) { search.text = ""; search.input.forceActiveFocus(); }
-        SearchField {
-            id: search
-            Layout.fillWidth: true
-            placeholder: picker.placeholder
-            input.Keys.onEscapePressed: page.open = ""
-            onAccepted: if (picker.results.length) picker.picked(picker.results[0].value)
-        }
-        PickList {
-            current: picker.current
-            model: picker.results
-            onPicked: v => picker.picked(v)
-        }
-        Label {
-            visible: picker.results.length === 0 && picker.empty !== ""
-            leftPadding: 14
-            color: Theme.overlay1
-            text: picker.empty
-        }
+        shown: page.open === which
+        onClosed: if (page.open === which) page.open = ""
     }
     function languageRows(text) {
         return Language.search(text).map(l => ({ value: l.code, title: l.name, caption: l.english }));
@@ -81,13 +55,14 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Time zone")
-        Button {
+        Button { id: zoneButton;
             icon: "earth"
             text: TimeZone.current ? TimeZone.city(TimeZone.current) + " · " + TimeZone.country(TimeZone.current) : "…"
             onClicked: page.toggle("zone")
         }
     }
     Picker {
+        anchor: zoneButton
         which: "zone"
         placeholder: Tr.t("A city or a country…")
         current: TimeZone.current
@@ -111,16 +86,18 @@ SettingsPage {
     SettingsRow {
         visible: Config.weather.enabled
         title: Tr.t("Weather for")
-        Button {
+        Button { id: weatherButton;
             icon: "earth"
             text: Config.weather.city || (TimeZone.current ? TimeZone.city(TimeZone.current) + Tr.t(" (time zone)") : Tr.t("The time zone's city"))
             onClicked: page.toggle("weather")
         }
     }
-    CityPicker {
-        Layout.fillWidth: true
-        visible: page.open === "weather"
-        onChosen: page.open = ""
+    Dropdown {
+        anchor: weatherButton
+        shown: page.open === "weather"
+        onClosed: if (page.open === "weather") page.open = ""
+        onOpened: city.takeFocus()
+        CityPicker { id: city; Layout.fillWidth: true; onChosen: page.open = "" }
     }
 
     SettingsRow {
@@ -128,13 +105,14 @@ SettingsPage {
         RowLayout {
             spacing: Theme.space8
             IconButton { visible: Config.life.birthday !== ""; icon: "close"; label: Tr.t("Remove"); onClicked: { Config.setBirthday(""); page.open = ""; } }
-            Button { icon: "calendar"; text: Config.lifeText() || Tr.t("Not set"); onClicked: { page.birthYear = 0; page.toggle("birthday"); } }
+            Button { id: birthdayButton; icon: "calendar"; text: Config.lifeText() || Tr.t("Not set"); onClicked: { page.birthYear = 0; page.toggle("birthday"); } }
         }
     }
     // Picked, not typed: the year from a list, then the day on a calendar.
     property int birthYear: 0
     readonly property date born: /^\d{4}-\d{2}-\d{2}$/.test(Config.life.birthday) ? new Date(Config.life.birthday + "T00:00:00") : new Date(NaN)
     SettingsPicker {
+        anchor: birthdayButton
         shown: page.open === "birthday" && page.birthYear === 0
         current: isNaN(page.born.getTime()) ? "" : String(page.born.getFullYear())
         results: {
@@ -143,33 +121,38 @@ SettingsPage {
             return out;
         }
         onPicked: v => page.birthYear = +v
-        onClosed: page.open = ""
+        // Picking the year closes this list for the calendar; only a close without one ends picking.
+        onClosed: if (page.birthYear === 0 && page.open === "birthday") page.open = ""
     }
-    MonthCalendar {
-        id: birthCalendar
-        Layout.fillWidth: true
-        Layout.maximumWidth: implicitWidth
-        visible: page.open === "birthday" && page.birthYear > 0
-        property bool armed: false
-        onVisibleChanged: {
-            if (!visible) { armed = false; return; }
+    Dropdown {
+        anchor: birthdayButton
+        preferredWidth: birthCalendar.implicitWidth + 2 * padding
+        shown: page.open === "birthday" && page.birthYear > 0
+        onClosed: if (page.open === "birthday") page.open = ""
+        onAboutToShow: {
             const had = !isNaN(page.born.getTime()) && page.born.getFullYear() === page.birthYear;
-            year = page.birthYear;
-            month = had ? page.born.getMonth() : 0;
-            picked = had ? page.born : new Date(NaN);
-            armed = true;
+            birthCalendar.armed = false;
+            birthCalendar.year = page.birthYear;
+            birthCalendar.month = had ? page.born.getMonth() : 0;
+            birthCalendar.picked = had ? page.born : new Date(NaN);
+            birthCalendar.armed = true;
         }
-        onPickedChanged: {
-            if (!armed || isNaN(picked.getTime())) return;
-            Config.setBirthday(picked.getDate() + "." + (picked.getMonth() + 1) + "." + picked.getFullYear());
-            page.open = "";
+        MonthCalendar {
+            id: birthCalendar
+            Layout.fillWidth: true
+            property bool armed: false
+            onPickedChanged: {
+                if (!armed || isNaN(picked.getTime())) return;
+                Config.setBirthday(picked.getDate() + "." + (picked.getMonth() + 1) + "." + picked.getFullYear());
+                page.open = "";
+            }
         }
     }
 
     SettingsSection { text: Tr.t("Language") }
     SettingsRow {
         title: Tr.t("Language")
-        Button {
+        Button { id: languageButton;
             icon: "translate"
             active: !Language.busy
             text: Language.nameOf(Language.language)
@@ -177,6 +160,7 @@ SettingsPage {
         }
     }
     Picker {
+        anchor: languageButton
         which: "language"
         placeholder: Tr.t("Find a language…")
         current: Language.language
@@ -190,7 +174,7 @@ SettingsPage {
     }
     SettingsRow {
         title: Tr.t("Formats")
-        Button {
+        Button { id: formatsButton;
             icon: "calendar"
             active: !Language.busy
             text: Language.nameOf(Language.formats)
@@ -198,6 +182,7 @@ SettingsPage {
         }
     }
     Picker {
+        anchor: formatsButton
         which: "formats"
         placeholder: Tr.t("Find a language…")
         current: Language.formats

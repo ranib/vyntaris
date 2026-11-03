@@ -61,8 +61,6 @@ var rows = [
     { page: "appearance", title: "Monospace font" },
     { page: "appearance", title: "Animations" },
     { page: "appearance", title: "Animation style" },
-    { page: "appearance", title: "Windows open" },
-    { page: "appearance", title: "Workspace switch" },
     { page: "appearance", title: "Login sound" },
     { page: "wallpaper", title: "Wallpaper" },
     { page: "wallpaper", title: "Folder" },

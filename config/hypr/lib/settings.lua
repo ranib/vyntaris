@@ -4,7 +4,7 @@ local M = {}
 
 local defaults = {
     theme   = { flavor = "mocha", accent = "mauve", accentLight = "mauve", animationSpeed = 1.5,
-                animationStyle = "snappy", windowAnimation = "slidevert", workspaceAnimation = "slidevert",
+                animationStyle = "snappy",
                 cursorTheme = "Bibata-Modern-Ice", cursorSize = 24 },
     apps    = { terminal = "kitty", terminalRun = "kitty", fileManager = "thunar", browser = "firefox", editor = "code" },
     input   = { kbLayout = "us", kbVariant = "", kbOptions = "",

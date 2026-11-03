@@ -8,6 +8,7 @@ ColumnLayout {
     id: root
     property int maxRows: 5
     signal chosen()
+    function takeFocus() { search.text = ""; search.input.forceActiveFocus(); }
     spacing: Theme.space8
 
     SearchField {

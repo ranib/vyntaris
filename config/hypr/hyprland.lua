@@ -164,8 +164,9 @@ local function animation(a)
     hl.animation(a)
 end
 
-local winStyle = ({ slidevert = "slidevert", slide = "slide", popin = "popin 85%", gnome = "gnomed", fade = "popin 100%" })[settings.theme.windowAnimation] or "slidevert"
-local wsStyle = ({ slidevert = "slidevert", slide = "slide", fade = "fade", slidefade = "slidefade 20%" })[settings.theme.workspaceAnimation] or "slidevert"
+-- How windows open and workspaces switch is part of the motion style: a preset's own, or rising for Vyntaris's three.
+local winStyle = ({ slidevert = "slidevert", slide = "slide", popin = "popin 85%" })[preset and preset.windows or ""] or "slidevert"
+local wsStyle = ({ slidevert = "slidevert", slide = "slide", fade = "fade" })[preset and preset.workspaces or ""] or "slidevert"
 
 animation({ leaf = "global",           enabled = true, speed = 6,   bezier = "default" })
 animation({ leaf = "windows",          enabled = true, speed = 2.2, bezier = "snappyReturn", style = winStyle })

@@ -71,12 +71,13 @@ struct Doctor {
     spinner: adw::Spinner,
     fix_all: gtk::Button,
     again: gtk::Button,
-    report_button: gtk::Button,
     failure_label: gtk::Label,
     found: adw::PreferencesGroup,
     tools: adw::PreferencesGroup,
     clean_all: gtk::Button,
     rows: RefCell<Vec<(adw::PreferencesGroup, gtk::Widget)>>,
+    sections: gtk::ListBox,
+    pages: gtk::Stack,
 
     reporting: gtk::Revealer,
     what: adw::EntryRow,
@@ -206,7 +207,6 @@ impl Doctor {
         self.see.set_label(&if self.see.is_active() { tr("Hide") } else { tr("See what's sent") });
         self.make.set_label(&if ready { tr("Open on GitHub") } else { tr("Make the report") });
         self.make.set_sensitive(!self.preparing.get() && !self.what.text().trim().is_empty());
-        self.report_button.set_sensitive(!self.reporting.reveals_child());
     }
 
     fn show(self: &Rc<Self>) {
@@ -263,6 +263,13 @@ impl Doctor {
         self.found.set_visible(findings.iter().any(|f| level(f) != "tool"));
         self.tools.set_visible(findings.iter().any(|f| level(f) == "tool"));
         self.clean_all.set_visible(tools.len() > 1);
+        // Clean up is in the list only when there's something to clean up.
+        if let Some(row) = self.sections.row_at_index(1) {
+            row.set_visible(!tools.is_empty());
+            if tools.is_empty() && self.sections.selected_row().is_some_and(|r| r.index() == 1) {
+                self.sections.select_row(self.sections.row_at_index(0).as_ref());
+            }
+        }
         self.clean_all.set_sensitive(!fixing && !checking);
     }
 
@@ -314,12 +321,13 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         spinner: adw::Spinner::new(),
         fix_all: gtk::Button::builder().css_classes(["suggested-action", "pill"]).valign(gtk::Align::Center).build(),
         again: gtk::Button::builder().icon_name("view-refresh-symbolic").tooltip_text(tr("Check again")).build(),
-        report_button: gtk::Button::builder().label(tr("Report a problem")).build(),
         failure_label: label(&["error"]),
-        found: adw::PreferencesGroup::builder().title(tr("Found")).build(),
-        tools: adw::PreferencesGroup::builder().title(tr("Clean up")).description(tr("What can be cleaned up any time, and how much it frees")).build(),
+        found: adw::PreferencesGroup::new(),
+        tools: adw::PreferencesGroup::builder().description(tr("What can be cleaned up any time, and how much it frees")).build(),
         clean_all: gtk::Button::builder().label(tr("Clean up all")).css_classes(["flat"]).valign(gtk::Align::Center).build(),
         rows: RefCell::default(),
+        sections: gtk::ListBox::builder().css_classes(["navigation-sidebar"]).build(),
+        pages: gtk::Stack::builder().transition_type(gtk::StackTransitionType::Crossfade).vhomogeneous(false).build(),
         reporting: gtk::Revealer::builder().transition_type(gtk::RevealerTransitionType::SlideDown).build(),
         what: adw::EntryRow::builder().title(tr("What went wrong? (e.g. the bar disappeared after plugging in a monitor)")).build(),
         report_status: label(&["dim-label", "caption"]),
@@ -355,7 +363,7 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         dd.fix(&all);
     });
 
-    let report = adw::PreferencesGroup::builder().title(tr("Report a problem")).description(tr(
+    let report = adw::PreferencesGroup::builder().description(tr(
         "Say what went wrong and when. The report adds what the system says: its versions, what Dr. Help found, recent errors and crashes. Your name, the computer's, Wi-Fi networks and addresses are taken out.",
     )).build();
     report.add(&d.what);
@@ -376,16 +384,11 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
     d.reporting.set_child(Some(&report_box));
 
     let dd = d.clone();
-    d.report_button.connect_clicked(move |_| {
-        dd.report.replace(None);
-        dd.reporting.set_reveal_child(true);
-        dd.show_report();
-        dd.what.grab_focus();
-    });
-    let dd = d.clone();
     cancel.connect_clicked(move |_| {
-        dd.reporting.set_reveal_child(false);
+        dd.what.set_text("");
+        dd.report.replace(None);
         dd.show_report();
+        dd.sections.select_row(dd.sections.row_at_index(0).as_ref());
     });
     let dd = d.clone();
     d.see.connect_toggled(move |_| dd.show_report());
@@ -395,8 +398,10 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         match url {
             Some(url) => {
                 vyntaris_ui::launch(&["xdg-open", &url]);
-                dd.reporting.set_reveal_child(false);
+                dd.what.set_text("");
+                dd.report.replace(None);
                 dd.show_report();
+                dd.sections.select_row(dd.sections.row_at_index(0).as_ref());
             }
             None => dd.prepare(),
         }
@@ -409,30 +414,76 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         dd.show_report();
     });
 
-    d.tools.set_header_suffix(Some(&d.clean_all));
     let dd = d.clone();
     d.clean_all.connect_clicked(move |_| {
         let all: Vec<Value> = dd.findings.borrow().iter().filter(|f| level(f) == "tool").filter_map(|f| fixes(f).into_iter().next()).collect();
         dd.fix(&all);
     });
 
-    let page = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(24)
-        .margin_top(24).margin_bottom(30).margin_start(18).margin_end(18).build();
-    for w in [summary.upcast_ref::<gtk::Widget>(), d.reporting.upcast_ref(), d.failure_label.upcast_ref(), d.found.upcast_ref(), d.tools.upcast_ref()] {
-        page.append(w);
+    // Laid out like the Store: what to look at on the left, a page of it on the right.
+    let page = |children: &[&gtk::Widget]| {
+        let page = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(18)
+            .margin_top(18).margin_bottom(24).margin_start(18).margin_end(18).build();
+        for w in children {
+            page.append(*w);
+        }
+        gtk::ScrolledWindow::builder().hscrollbar_policy(gtk::PolicyType::Never).vexpand(true)
+            .child(&adw::Clamp::builder().maximum_size(820).child(&page).build()).build()
+    };
+    let heading = |text: &str, extra: Option<&gtk::Widget>| {
+        let top = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+        top.append(&gtk::Label::builder().label(text).xalign(0.0).hexpand(true).css_classes(["title-2"]).build());
+        if let Some(w) = extra {
+            top.append(w);
+        }
+        top.upcast::<gtk::Widget>()
+    };
+    d.reporting.set_reveal_child(true);
+    let checks = page(&[summary.upcast_ref(), d.failure_label.upcast_ref(), d.found.upcast_ref()]);
+    let cleanup = page(&[&heading(&tr("Clean up"), Some(d.clean_all.upcast_ref())), d.tools.upcast_ref()]);
+    let reporting = page(&[&heading(&tr("Report a problem"), None), d.reporting.upcast_ref()]);
+    for (name, icon, label, child) in [
+        ("checks", "emblem-ok-symbolic", "Checks", &checks),
+        ("cleanup", "user-trash-symbolic", "Clean up", &cleanup),
+        ("report", "mail-send-symbolic", "Report a problem", &reporting),
+    ] {
+        d.pages.add_named(child, Some(name));
+        let row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+        row.append(&gtk::Image::from_icon_name(icon));
+        row.append(&gtk::Label::builder().label(tr(label)).xalign(0.0).build());
+        d.sections.append(&gtk::ListBoxRow::builder().child(&row).name(name).build());
     }
-    let scroll = gtk::ScrolledWindow::builder().hscrollbar_policy(gtk::PolicyType::Never).vexpand(true)
-        .child(&adw::Clamp::builder().maximum_size(760).child(&page).build()).build();
-    let header = adw::HeaderBar::builder().title_widget(&adw::WindowTitle::new("Dr. Help", "")).build();
-    header.pack_start(&d.again);
-    header.pack_end(&d.report_button);
+    d.sections.select_row(d.sections.row_at_index(0).as_ref());
+    let dd = d.clone();
+    d.sections.connect_row_selected(move |_, row| {
+        let Some(row) = row else { return };
+        let name = row.widget_name();
+        dd.pages.set_visible_child_name(&name);
+        if name == "report" {
+            dd.show_report();
+            dd.what.grab_focus();
+        }
+    });
+    let side = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(12)
+        .margin_top(12).margin_bottom(12).margin_start(12).margin_end(12).build();
+    side.append(&gtk::ScrolledWindow::builder().vexpand(true).child(&d.sections).build());
+    let side_bar = adw::ToolbarView::new();
+    side_bar.add_top_bar(&adw::HeaderBar::builder().title_widget(&adw::WindowTitle::new("Dr. Help", "Vyntaris")).build());
+    side_bar.set_content(Some(&side));
+    let header = adw::HeaderBar::builder().show_title(false).build();
+    header.pack_end(&d.again);
     let dd = d.clone();
     d.again.connect_clicked(move |_| dd.check());
-    let view = adw::ToolbarView::new();
-    view.add_top_bar(&header);
-    view.set_content(Some(&scroll));
+    let content = adw::ToolbarView::new();
+    content.add_top_bar(&header);
+    content.set_content(Some(&d.pages));
+    let view = adw::NavigationSplitView::builder()
+        .sidebar(&adw::NavigationPage::builder().title("Dr. Help").child(&side_bar).build())
+        .content(&adw::NavigationPage::builder().title(tr("Checks")).child(&content).build())
+        .min_sidebar_width(232.0).max_sidebar_width(232.0).build();
 
-    let win = adw::ApplicationWindow::builder().application(app).title(tr("Dr. Help")).default_width(720).default_height(680).content(&view).build();
+    let win = adw::ApplicationWindow::builder().application(app).title(tr("Dr. Help")).default_width(880).default_height(660)
+        .width_request(700).height_request(480).content(&view).build();
     vyntaris_ui::escape_closes(&win);
     d.show();
     d.show_report();

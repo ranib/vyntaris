@@ -10,9 +10,9 @@ window, .card, list.boxed-list, preferencesgroup > box > list { border-radius: 1
     min-width: 18px;
     padding: 3px 9px;
     border-radius: 9px;
-    color: alpha(currentColor, 0.8);
-    background: alpha(currentColor, 0.05);
-    box-shadow: inset 0 0 0 1px alpha(currentColor, 0.14);
+    color: mix(@window_bg_color, @window_fg_color, 0.8);
+    background: mix(@window_bg_color, @window_fg_color, 0.05);
+    box-shadow: inset 0 0 0 1px mix(@window_bg_color, @window_fg_color, 0.14);
 }
 .vyntaris-title { font-size: 20pt; font-weight: 700; }
 .vyntaris-badge {
@@ -25,4 +25,11 @@ window, .card, list.boxed-list, preferencesgroup > box > list { border-radius: 1
 }
 .vyntaris-badge.warning { color: @warning_fg_color; background: @warning_bg_color; }
 .vyntaris-note { padding: 10px 14px; }
-.vyntaris-note.error { color: @error_color; background: alpha(@error_bg_color, 0.12); }
+.vyntaris-note.error { color: @error_color; background: mix(@card_bg_color, @error_bg_color, 0.12); }
+/* Only solid colours: destructive buttons are filled like the suggested ones, and an unavailable one is a quieter
+   solid colour, not the same one faded (also in gtk.css, from AppTheme.qml, for every GTK app). */
+button.destructive-action { background-color: @destructive_bg_color; color: @destructive_fg_color; }
+button.destructive-action:hover { background-color: shade(@destructive_bg_color, 1.08); }
+button.destructive-action:active { background-color: shade(@destructive_bg_color, 0.92); }
+button.suggested-action:disabled { filter: none; opacity: 1; background-color: mix(@window_bg_color, @accent_bg_color, 0.4); color: mix(@window_bg_color, @accent_fg_color, 0.55); }
+button.destructive-action:disabled { filter: none; opacity: 1; background-color: mix(@window_bg_color, @destructive_bg_color, 0.4); color: mix(@window_bg_color, @destructive_fg_color, 0.55); }

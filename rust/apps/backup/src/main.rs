@@ -94,7 +94,9 @@ struct Backup {
     failure: gtk::Label,
     reconnect: gtk::Label,
     settings: adw::PreferencesGroup,
-    when: adw::ToggleGroup,
+    sections: gtk::ListBox,
+    pages: gtk::Stack,
+    folders_count: gtk::Label,
     folders: adw::PreferencesGroup,
     folder_rows: RefCell<Vec<adw::ActionRow>>,
     space: adw::ActionRow,
@@ -188,7 +190,6 @@ impl Backup {
             s.set("cloudBackup.when", json!(w));
             let _ = s.save();
         }
-        self.show_when(w);
     }
     fn pick(&self, id: &str, on: bool) {
         let mut s = Settings::load();
@@ -196,14 +197,7 @@ impl Backup {
         let now: Vec<String> = choices().into_iter().map(|(c, _)| c).filter(|c| if c == id { on } else { was.contains(c) }).collect();
         s.set("cloudBackup.folders", json!(now.join(",")));
         let _ = s.save();
-    }
-
-    fn show_when(&self, w: &str) {
-        self.settings.set_description(Some(&match w {
-            "startup" => tr("A few minutes after the computer starts, once each time."),
-            "shutdown" => tr("As you shut down or restart, before the computer goes off. You can skip it there."),
-            _ => tr("Only when you press Back up now."),
-        }));
+        self.count_folders();
     }
 
     fn show_folders(self: &Rc<Self>) {
@@ -222,6 +216,12 @@ impl Backup {
             rows.push(row);
         }
         *self.folder_rows.borrow_mut() = rows;
+        self.count_folders();
+    }
+
+    fn count_folders(&self) {
+        let (on, all) = (picked(&Settings::load()).len(), choices().len());
+        self.folders_count.set_label(&trf!("{0} of {1}", on, all));
     }
 
     fn show(self: &Rc<Self>) {
@@ -278,9 +278,14 @@ impl Backup {
         self.failure.set_label(error);
         self.reconnect.set_visible(reconnect);
 
-        self.settings.set_visible(connected);
-        self.folders.set_visible(connected);
         self.account.set_visible(connected);
+        // Folders and When are there once signed in; until then it's the overview, to connect.
+        for (i, row) in [1, 2].into_iter().filter_map(|i| self.sections.row_at_index(i).map(|r| (i, r))) {
+            row.set_sensitive(connected);
+            if !connected && self.sections.selected_row().is_some_and(|r| r.index() == i) {
+                self.sections.select_row(self.sections.row_at_index(0).as_ref());
+            }
+        }
         let (used, total) = (st["used"].as_f64().unwrap_or(-1.0), st["total"].as_f64().unwrap_or(-1.0));
         self.space.set_visible(total > 0.0);
         if total > 0.0 {
@@ -312,9 +317,11 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         bar: vyntaris_ui::Segments::new(),
         failure: label(&["error"]),
         reconnect: label(&["warning"]),
-        settings: adw::PreferencesGroup::builder().title(tr("When")).build(),
-        when: adw::ToggleGroup::new(),
-        folders: adw::PreferencesGroup::builder().title(tr("Folders backed up")).description(tr(
+        settings: adw::PreferencesGroup::new(),
+        sections: gtk::ListBox::builder().css_classes(["navigation-sidebar"]).build(),
+        pages: gtk::Stack::builder().transition_type(gtk::StackTransitionType::Crossfade).vhomogeneous(false).build(),
+        folders_count: gtk::Label::builder().css_classes(["dim-label"]).build(),
+        folders: adw::PreferencesGroup::builder().description(tr(
             "The folders picked below are copied to \"Vyntaris backup\" on your Google Drive, when you pick. What you change or delete here keeps its last copy there for when you need it back. It sees only what it put there, not the rest of your Drive.",
         )).build(),
         folder_rows: RefCell::default(),
@@ -361,20 +368,25 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
     b.bar.widget().set_margin_bottom(16);
     b.progress.set_child(Some(&under_way));
 
-    for (value, text) in [("startup", "At every start"), ("shutdown", "At shutdown"), ("manual", "Only by hand")] {
-        b.when.add(adw::Toggle::builder().name(value).label(tr(text)).build());
-    }
+    // When it backs up: one of three, each saying what it means (solid radios, like the Store's lists).
     let w = when(&s);
-    b.when.set_active_name(Some(&w));
-    b.when.set_hexpand(true);
-    b.show_when(&w);
-    b.settings.add(&b.when);
-    let bb = b.clone();
-    b.when.connect_active_name_notify(move |g| {
-        if let Some(name) = g.active_name() {
-            bb.set_when(&name);
+    let mut first: Option<gtk::CheckButton> = None;
+    for (value, text, about) in [
+        ("startup", tr("At every start"), tr("A few minutes after the computer starts, once each time.")),
+        ("shutdown", tr("At shutdown"), tr("As you shut down or restart, before the computer goes off. You can skip it there.")),
+        ("manual", tr("Only by hand"), tr("Only when you press Back up now.")),
+    ] {
+        let radio = gtk::CheckButton::builder().active(w == value).valign(gtk::Align::Center).build();
+        match &first {
+            Some(f) => radio.set_group(Some(f)),
+            None => first = Some(radio.clone()),
         }
-    });
+        let row = adw::ActionRow::builder().title(text).subtitle(about).activatable_widget(&radio).build();
+        row.add_prefix(&radio);
+        let (bb, v) = (b.clone(), value.to_string());
+        radio.connect_toggled(move |r| if r.is_active() { bb.set_when(&v) });
+        b.settings.add(&row);
+    }
 
     b.show_folders();
     b.space_bar.widget().set_width_request(140);
@@ -405,18 +417,59 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         bb.disconnect();
     });
 
-    let page = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(24)
-        .margin_top(24).margin_bottom(30).margin_start(18).margin_end(18).build();
-    for w in [summary.upcast_ref::<gtk::Widget>(), b.progress.upcast_ref(), b.failure.upcast_ref(), b.reconnect.upcast_ref(),
-              b.account.upcast_ref(), b.settings.upcast_ref(), b.folders.upcast_ref()] {
-        page.append(w);
+    // Laid out like the Store: what it is on the left, a page of it on the right.
+    let page = |children: &[&gtk::Widget]| {
+        let page = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(18)
+            .margin_top(18).margin_bottom(24).margin_start(18).margin_end(18).build();
+        for w in children {
+            page.append(*w);
+        }
+        gtk::ScrolledWindow::builder().hscrollbar_policy(gtk::PolicyType::Never).vexpand(true)
+            .child(&adw::Clamp::builder().maximum_size(820).child(&page).build()).build()
+    };
+    let heading = |text: &str, extra: Option<&gtk::Widget>| {
+        let top = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+        top.append(&gtk::Label::builder().label(text).xalign(0.0).hexpand(true).css_classes(["title-2"]).build());
+        if let Some(w) = extra {
+            top.append(w);
+        }
+        top.upcast::<gtk::Widget>()
+    };
+    b.account.set_title(&tr("Account"));
+    let overview = page(&[summary.upcast_ref(), b.progress.upcast_ref(), b.failure.upcast_ref(), b.reconnect.upcast_ref(), b.account.upcast_ref()]);
+    let folders = page(&[&heading(&tr("Folders backed up"), Some(b.folders_count.upcast_ref())), b.folders.upcast_ref()]);
+    let schedule = page(&[&heading(&tr("When"), None), b.settings.upcast_ref()]);
+    for (name, icon, label, child) in [
+        ("overview", "weather-overcast-symbolic", "Overview", &overview),
+        ("folders", "folder-symbolic", "Folders", &folders),
+        ("when", "alarm-symbolic", "When", &schedule),
+    ] {
+        b.pages.add_named(child, Some(name));
+        let row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+        row.append(&gtk::Image::from_icon_name(icon));
+        row.append(&gtk::Label::builder().label(tr(label)).xalign(0.0).build());
+        b.sections.append(&gtk::ListBoxRow::builder().child(&row).name(name).build());
     }
-    let scroll = gtk::ScrolledWindow::builder().hscrollbar_policy(gtk::PolicyType::Never).vexpand(true)
-        .child(&adw::Clamp::builder().maximum_size(720).child(&page).build()).build();
-    let header = adw::HeaderBar::builder().title_widget(&adw::WindowTitle::new(&tr("Backup"), "")).build();
-    let view = adw::ToolbarView::new();
-    view.add_top_bar(&header);
-    view.set_content(Some(&scroll));
+    b.sections.select_row(b.sections.row_at_index(0).as_ref());
+    let bb = b.clone();
+    b.sections.connect_row_selected(move |_, row| {
+        if let Some(row) = row {
+            bb.pages.set_visible_child_name(&row.widget_name());
+        }
+    });
+    let side = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(12)
+        .margin_top(12).margin_bottom(12).margin_start(12).margin_end(12).build();
+    side.append(&gtk::ScrolledWindow::builder().vexpand(true).child(&b.sections).build());
+    let side_bar = adw::ToolbarView::new();
+    side_bar.add_top_bar(&adw::HeaderBar::builder().title_widget(&adw::WindowTitle::new(&tr("Backup"), &tr("Google Drive"))).build());
+    side_bar.set_content(Some(&side));
+    let content = adw::ToolbarView::new();
+    content.add_top_bar(&adw::HeaderBar::builder().show_title(false).build());
+    content.set_content(Some(&b.pages));
+    let view = adw::NavigationSplitView::builder()
+        .sidebar(&adw::NavigationPage::builder().title(tr("Backup")).child(&side_bar).build())
+        .content(&adw::NavigationPage::builder().title(tr("Google Drive")).child(&content).build())
+        .min_sidebar_width(232.0).max_sidebar_width(232.0).build();
 
     let now = gio::File::for_path(glib::user_runtime_dir().join("vyntaris-cloud-backup").join("now"));
     if let Ok(monitor) = now.monitor_file(gio::FileMonitorFlags::NONE, gio::Cancellable::NONE) {
@@ -425,7 +478,8 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         std::mem::forget(monitor);
     }
 
-    let win = adw::ApplicationWindow::builder().application(app).title(tr("Backup")).default_width(680).default_height(720).content(&view).build();
+    let win = adw::ApplicationWindow::builder().application(app).title(tr("Backup")).default_width(880).default_height(660)
+        .width_request(700).height_request(480).content(&view).build();
     vyntaris_ui::escape_closes(&win);
     b.read_now();
     b.show();

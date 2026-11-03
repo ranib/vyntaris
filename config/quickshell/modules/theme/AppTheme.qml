@@ -235,6 +235,8 @@ Scope {
             + `button.destructive-action { background-color: @destructive_bg_color; color: @destructive_fg_color; }\n`
             + `button.destructive-action:hover { background-color: shade(@destructive_bg_color, 1.08); }\n`
             + `button.destructive-action:active, button.destructive-action:checked { background-color: shade(@destructive_bg_color, 0.92); }\n`
+            + `button.suggested-action:disabled { filter: none; opacity: 1; background-color: mix(@window_bg_color, @accent_bg_color, 0.4); color: mix(@window_bg_color, @accent_fg_color, 0.55); }\n`
+            + `button.destructive-action:disabled { filter: none; opacity: 1; background-color: mix(@window_bg_color, @destructive_bg_color, 0.4); color: mix(@window_bg_color, @destructive_fg_color, 0.55); }\n`
             + `.titlebutton, windowcontrols { min-width: 0; min-height: 0; padding: 0; margin: 0; opacity: 0; }\n`
             + `window.csd > .titlebar:not(headerbar) { min-height: 0; padding: 0; margin: 0; border: none; background: none; box-shadow: none; }\n`
             + `window.csd > .titlebar:not(headerbar) * { min-height: 0; padding: 0; margin: 0; font-size: 0; }\n`

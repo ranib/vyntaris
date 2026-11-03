@@ -47,7 +47,7 @@ systemctl poweroff
 CHECK
 
 prepare() {
-    local esp='mount /dev/vda1 /mnt && mkdir -p /mnt/EFI/Microsoft/Boot && cp /usr/share/edk2-shell/x64/Shell_Full.efi /mnt/EFI/Microsoft/Boot/bootmgfw.efi && umount /mnt'
+    local esp='mount /dev/vda1 /mnt && mkdir -p /mnt/EFI/Microsoft/Boot && cp /usr/share/edk2-shell/x64/Shell_Full.efi /mnt/EFI/Microsoft/Boot/bootmgfw.efi && mkdir -p /mnt/EFI/Boot && cp /mnt/EFI/Microsoft/Boot/bootmgfw.efi /mnt/EFI/Boot/bootx64.efi && umount /mnt'
     local settle='partprobe /dev/vda; udevadm settle'
     case "$1" in
         none) ;;

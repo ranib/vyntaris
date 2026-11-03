@@ -27,7 +27,7 @@ mkdir -p "$repo"
 cp "$pkgfile" "$repo/"
 repo-add -q "$repo/vyntaris.db.tar.gz" "$repo/$(basename "$pkgfile")"
 
-for p in git hyprland quickshell kitty inter-font ttf-jetbrains-mono noto-fonts networkmanager; do
+for p in efibootmgr git hyprland quickshell kitty inter-font ttf-jetbrains-mono noto-fonts networkmanager; do
     grep -qx "$p" "$profile/packages.x86_64" || echo "$p" >> "$profile/packages.x86_64"
 done
 

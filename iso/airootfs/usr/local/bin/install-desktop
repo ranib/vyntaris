@@ -341,6 +341,25 @@ else
 fi
 inside mkinitcpio -P >/dev/null
 rm -f "$MNT"/boot/initramfs-*.img
+# In a chroot bootctl is --graceful (systemd 258+): when it can't add itself to the firmware's boot list it says nothing.
+# On our own EFI partition its EFI/BOOT/BOOTX64.EFI starts it anyway, but on Windows' that file is Windows', so without
+# the entry the computer never sees Vyntaris. So the entry is checked, and made, from out here.
+loader_part="${other_esp:-$esp}"
+loader_partuuid="$(blkid -s PARTUUID -o value "$loader_part" | tr '[:upper:]' '[:lower:]')"
+boot_entry() {
+    efibootmgr -v 2>/dev/null | awk -v u="$loader_partuuid" '{ l = tolower($0) }
+        l ~ /^boot[0-9a-f][0-9a-f][0-9a-f][0-9a-f]/ && u != "" && index(l, u) && index(l, "\\efi\\systemd\\systemd-bootx64.efi") { print substr($1, 5, 4); exit }'
+}
+entry="$(boot_entry)"
+if [ -z "$entry" ]; then
+    efibootmgr -q --create --disk "$INSTALL_DISK" --part "$(cat "/sys/class/block/$(basename "$loader_part")/partition")" \
+        --label "Linux Boot Manager" --loader '\EFI\systemd\systemd-bootx64.efi' >/dev/null 2>&1 || true
+    entry="$(boot_entry)"
+fi
+if [ -n "$entry" ]; then
+    order="$(efibootmgr | sed -n 's/^BootOrder: *//p' | tr ',' '\n' | grep -vix "$entry" | paste -sd, || true)"
+    efibootmgr -q -o "$entry${order:+,$order}" >/dev/null 2>&1 || note "couldn't put Vyntaris first in the boot order: pick it in the computer's boot menu"
+fi
 
 mkdir -p "$MNT/home/$INSTALL_USER/.config/quickshell"
 printf '{\n  "input": { "kbLayout": "%s", "kbVariant": "%s" }\n}\n' \
@@ -360,6 +379,10 @@ if [ -n "$other_esp" ]; then
     [ "$first_boot" = "$esp" ] || die "the computer would start from $first_boot, not from $esp"
 fi
 [ -s "$loader_esp/EFI/systemd/systemd-bootx64.efi" ] || die "the boot loader isn't on the EFI partition"
+if [ -z "$entry" ]; then
+    [ -z "$other_esp" ] || die "the computer has no boot entry for Vyntaris, and $other_esp starts only the other system: run efibootmgr --create --disk $INSTALL_DISK --part $(cat "/sys/class/block/$(basename "$loader_part")/partition") --label 'Linux Boot Manager' --loader '\EFI\systemd\systemd-bootx64.efi'"
+    note "the computer has no boot entry for Vyntaris; it starts from EFI/BOOT/BOOTX64.EFI instead"
+fi
 for uki in "$MNT"/boot/EFI/Linux/*.efi "$loader_esp"/EFI/Linux/*.efi; do
     if [ -e "$uki" ]; then check_uki "$uki"; fi
 done

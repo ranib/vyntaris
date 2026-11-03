@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import QtQuick
 import "Palettes.js" as Palettes
+import "Motion.js" as Motion
 
 Singleton {
     id: root
@@ -175,8 +176,10 @@ Singleton {
     }
 
     readonly property string animStyle: Config.theme.animationStyle
-    readonly property bool calm: animStyle === "smooth" || animStyle === "snappy"
-    readonly property real speed: Config.theme.animationSpeed * (animStyle === "snappy" ? 1.45 : 1)
+    // Beyond Vyntaris's own three, a style is one of Motion.js's presets: the same curves and pace as the windows.
+    readonly property var preset: Motion.presets[animStyle] ?? null
+    readonly property bool calm: animStyle === "smooth" || animStyle === "snappy" || preset !== null
+    readonly property real speed: Config.theme.animationSpeed * (animStyle === "snappy" ? 1.45 : preset ? preset.speed : 1)
     function duration(ms) {
         return speed > 0 ? Math.round(ms / speed) : 0;
     }
@@ -188,15 +191,15 @@ Singleton {
 
     readonly property var curveStandard:   [0.2, 0, 0, 1, 1, 1]
     readonly property var curveDecelerate: [0.05, 0.7, 0.1, 1, 1, 1]
-    readonly property var curveSpring: animStyle === "snappy" ? [0.2, 1, 0.3, 1, 1, 1]
+    readonly property var curveSpring: preset ? preset.open.concat([1, 1]) : animStyle === "snappy" ? [0.2, 1, 0.3, 1, 1, 1]
         : calm ? [0.25, 0.8, 0.25, 1, 1, 1] : [0.34, 1.32, 0.64, 1, 1, 1]
 
     readonly property int durationPanelIn: calm ? duration(340) : duration(500)
     readonly property int durationPanelOut: duration(260)
     readonly property int durationContentDelay: duration(90)
     readonly property int durationContentOut: duration(80)
-    readonly property var curvePanelIn: animStyle === "snappy" ? [0.2, 1, 0.3, 1, 1, 1]
+    readonly property var curvePanelIn: preset ? preset.main.concat([1, 1]) : animStyle === "snappy" ? [0.2, 1, 0.3, 1, 1, 1]
         : calm ? [0.25, 0.8, 0.25, 1, 1, 1]
         : [0.0417, 0, 0.0833, 0.1433, 0.125, 0.2843, 0.1667, 0.4254, 0.2083, 0.5694, 0.25, 0.6788, 0.2917, 0.7882, 0.3333, 0.8664, 0.375, 0.9183, 0.4167, 0.9702, 0.4583, 0.9971, 0.5, 1.0118, 0.5417, 1.0264, 0.5833, 1.029, 0.625, 1.0283, 0.6667, 1.0275, 0.7083, 1.0232, 0.75, 1.0192, 0.7917, 1.0151, 0.8333, 1.0112, 0.875, 1.0083, 0.9167, 1.0053, 0.9583, 1.0013, 1, 1]
-    readonly property var curvePanelOut: [0.3, 0, 0.2, 1, 1, 1]
+    readonly property var curvePanelOut: preset ? preset.close.concat([1, 1]) : [0.3, 0, 0.2, 1, 1, 1]
 }

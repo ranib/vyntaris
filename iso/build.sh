@@ -39,7 +39,8 @@ inst="$profile/airootfs/usr/share/desktop-installer"
 mkdir -p "$inst/config" "$inst/components"
 cp "$REPO/config/installer/shell.qml" "$REPO/config/installer/hyprland.lua" "$inst/"
 cp "$REPO/config/installer/config/Config.qml" "$REPO/config/quickshell/config/Theme.qml" \
-    "$REPO/config/quickshell/config/Tr.qml" "$REPO/config/quickshell/config/Palettes.js" "$inst/config/"
+    "$REPO/config/quickshell/config/Tr.qml" "$REPO/config/quickshell/config/Palettes.js" \
+    "$REPO/config/quickshell/config/Motion.js" "$inst/config/"
 cp "$REPO"/config/quickshell/components/* "$inst/components/"
 cp -r "$REPO/config/quickshell/i18n" "$inst/"
 cp "$REPO/config/quickshell/assets/wallpapers/default.jpg" "$inst/wallpaper.jpg"

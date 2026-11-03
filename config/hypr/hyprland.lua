@@ -131,9 +131,17 @@ hl.config({
 })
 
 local animStyle = settings.theme.animationStyle or "snappy"
-local calm = animStyle == "smooth" or animStyle == "snappy"
+-- Beyond Vyntaris's own three, a style is one of Motion.js's presets: its own curves and pace, for the shell too.
+local preset = require("lib.motion")[animStyle]
+local calm = animStyle == "smooth" or animStyle == "snappy" or preset ~= nil
 
-if calm then
+if preset then
+    hl.curve("default",      { type = "bezier", points = preset.main })
+    hl.curve("opening",      { type = "bezier", points = preset.open })
+    hl.curve("overshot",     { type = "bezier", points = preset.workspace })
+    hl.curve("bounce",       { type = "bezier", points = preset.move })
+    hl.curve("snappyReturn", { type = "bezier", points = preset.main })
+elseif calm then
     local ease = animStyle == "snappy" and { {0.2, 1}, {0.3, 1} } or { {0.25, 0.8}, {0.25, 1} }
     hl.curve("default",      { type = "bezier", points = ease })
     hl.curve("overshot",     { type = "bezier", points = ease })
@@ -146,9 +154,9 @@ else
     hl.curve("snappyReturn", { type = "bezier", points = { {0.4, 0.9},   {0.6, 1.0} } })
 end
 hl.curve("liner",        { type = "bezier", points = { {1, 1},       {1, 1} } })
-hl.curve("accelerate",   { type = "bezier", points = { {0.3, 0},     {0.8, 0.15} } })
+hl.curve("accelerate",   { type = "bezier", points = preset and preset.close or { {0.3, 0}, {0.8, 0.15} } })
 
-local animK = math.max(animSpeed, 0.1) * (animStyle == "snappy" and 1.45 or 1)
+local animK = math.max(animSpeed, 0.1) * (animStyle == "snappy" and 1.45 or preset and preset.speed or 1)
 hl.curve("bouncy", { type = "spring", mass = 1, stiffness = 240 * animK * animK, dampening = 19 * animK })
 
 local function animation(a)
@@ -161,7 +169,9 @@ local wsStyle = ({ slidevert = "slidevert", slide = "slide", fade = "fade", slid
 
 animation({ leaf = "global",           enabled = true, speed = 6,   bezier = "default" })
 animation({ leaf = "windows",          enabled = true, speed = 2.2, bezier = "snappyReturn", style = winStyle })
-if calm then
+if preset then
+    animation({ leaf = "windowsIn",    enabled = true, speed = 2.2, bezier = "opening",      style = winStyle })
+elseif calm then
     animation({ leaf = "windowsIn",    enabled = true, speed = 2.2, bezier = "default",      style = winStyle })
 else
     animation({ leaf = "windowsIn",    enabled = true, speed = 2.2, spring = "bouncy",       style = winStyle })

@@ -6,6 +6,7 @@ import qs.components
 import qs.services
 import Quickshell.Io
 import "../../../config/Palettes.js" as Palettes
+import "../../../config/Motion.js" as Motion
 
 SettingsPage {
     id: page
@@ -150,13 +151,43 @@ SettingsPage {
             onPicked: v => { Config.theme.animationSpeed = v; Config.saveSoon(); }
         }
     }
+    // Vyntaris's own three, then Motion.js's presets: each moves the windows and the shell alike.
+    readonly property var styles: [
+        { value: "bouncy",   title: Tr.t("Bouncy"),   caption: Tr.t("Springs open, the way Vyntaris does") },
+        { value: "smooth",   title: Tr.t("Smooth"),   caption: Tr.t("Eases in and out") },
+        { value: "snappy",   title: Tr.t("Snappy"),   caption: Tr.t("Quick, no bounce") },
+        { value: "classic",  title: Tr.t("Classic"),  caption: Tr.t("Pops in, eases out") },
+        { value: "glide",    title: Tr.t("Glide"),    caption: Tr.t("Slides in with a swing") },
+        { value: "brisk",    title: Tr.t("Brisk"),    caption: Tr.t("Quick and straight") },
+        { value: "material", title: Tr.t("Material"), caption: Tr.t("Slows into place, speeds away") },
+        { value: "drift",    title: Tr.t("Drift"),    caption: Tr.t("Soft, with a little overshoot") },
+        { value: "spring",   title: Tr.t("Spring"),   caption: Tr.t("Springs past and settles") },
+        { value: "lift",     title: Tr.t("Lift"),     caption: Tr.t("Even, workspaces rise") },
+        { value: "calm",     title: Tr.t("Calm"),     caption: Tr.t("One gentle curve for all") },
+        { value: "tight",    title: Tr.t("Tight"),    caption: Tr.t("Short, nothing overshoots") },
+    ]
     SettingsRow {
         title: Tr.t("Animation style")
-        Choice {
-            options: [{ value: "bouncy", label: Tr.t("Bouncy") }, { value: "smooth", label: Tr.t("Smooth") }, { value: "snappy", label: Tr.t("Snappy") }]
-            current: Config.theme.animationStyle
-            onPicked: v => { Config.theme.animationStyle = v; Config.saveSoon(); }
+        Button {
+            icon: "sliders"
+            text: page.styles.find(st => st.value === Config.theme.animationStyle)?.title ?? Config.theme.animationStyle
+            onClicked: page.toggle("style")
         }
+    }
+    SettingsPicker {
+        shown: page.open === "style"
+        maxRows: 7
+        current: Config.theme.animationStyle
+        results: { const k = query.trim().toLowerCase(); return page.styles.filter(st => !k || st.title.toLowerCase().includes(k) || st.caption.toLowerCase().includes(k)); }
+        onPicked: v => {
+            Config.theme.animationStyle = v;
+            // A preset comes with how its windows open and workspaces switch; both can be changed below after.
+            const p = Motion.presets[v];
+            if (p) { Config.theme.windowAnimation = p.windows; Config.theme.workspaceAnimation = p.workspaces; }
+            Config.saveSoon();
+            page.open = "";
+        }
+        onClosed: page.open = ""
     }
     SettingsRow {
         title: Tr.t("Windows open")

@@ -23,6 +23,34 @@ color:#cba6f7}p{color:#a6adc8;margin:0}.mark{font-size:42px}</style></head><body
 EOF
 }
 connected() { command -v rclone >/dev/null && rclone listremotes 2>/dev/null | grep -qx "$remote:"; }
+# The token rclone authorize prints: a JSON line on its own, or (given a blob, as here, in newer rclone) base64 of
+# {"token": "<that JSON>"} between "Paste the following…" and "<---End paste".
+token_of() {
+    python3 -I - "$1" <<'PY'
+import base64, json, sys
+lines = open(sys.argv[1], encoding="utf-8", errors="replace").read().splitlines()
+for i, line in enumerate(lines):
+    t = line.strip()
+    if t.startswith("{") and "access_token" in t:
+        print(t); sys.exit(0)
+    if "Paste the following" in t and i + 1 < len(lines):
+        raw = lines[i + 1].strip()
+        if raw.startswith("{"):
+            print(raw); sys.exit(0)
+        try:
+            data = json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
+        except Exception:
+            sys.exit(1)
+        tok = data.get("token") if isinstance(data, dict) else None
+        if isinstance(tok, (dict, list)):
+            tok = json.dumps(tok)
+        if isinstance(tok, str) and "access_token" in tok:
+            print(tok); sys.exit(0)
+        if isinstance(data, dict) and "access_token" in data:
+            print(json.dumps(data)); sys.exit(0)
+sys.exit(1)
+PY
+}
 own() { [ -z "$client_id" ] || rclone config show "$remote" 2>/dev/null | grep -qxF "client_id = $client_id"; }
 setting() { "$json" get "$settings" "cloudBackup.$1" "$2" 2>/dev/null || echo "$2"; }
 now() { printf '%s\n' "$*" > "$run_dir/now"; }
@@ -38,7 +66,10 @@ case "${1:-}" in
             sign_in_page > "$page"
             blob="$(printf '{"client_id":"%s","client_secret":"%s","scope":"drive.file"}' "$client_id" "$client_secret" \
                 | base64 -w0 | tr '+/' '-_' | tr -d '=')"
-            token="$(timeout 300 rclone authorize drive "$blob" --template "$page" 2>/dev/null | grep -m1 '^{')"
+            # What rclone says is kept, so a sign-in that fails can be told why.
+            timeout 300 rclone authorize drive "$blob" --template "$page" > "$run_dir/authorize.out" 2> "$run_dir/connect.log"
+            token="$(token_of "$run_dir/authorize.out")"
+            rm -f "$run_dir/authorize.out"
             rm -f "$page"
             [ -n "$token" ] && rclone config create "$remote" drive scope=drive.file client_id="$client_id" \
                 client_secret="$client_secret" token="$token" --non-interactive >/dev/null 2>&1 \

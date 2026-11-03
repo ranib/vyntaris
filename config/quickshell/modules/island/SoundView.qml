@@ -66,27 +66,28 @@ Item {
                     readonly property bool can: modelData.available
                     readonly property bool twin: section.devices.filter(d => d.label === modelData.label).length > 1
                     Layout.fillWidth: true
-                    implicitHeight: 36
-                    radius: Theme.r(10)
-                    fill: chosen ? Theme.accent : area.containsMouse && can ? Theme.hover : "transparent"
+                    implicitHeight: 38
+                    radius: Theme.r(12)
+                    fill: area.containsMouse && can && !chosen ? Theme.hover : "transparent"
                     opacity: can ? 1 : Theme.disabledOpacity
                     Behavior on fill { ColorAnim {} }
                     RowLayout {
-                        anchors { fill: parent; leftMargin: Theme.space12; rightMargin: Theme.space12 }
+                        // The icon lines up with the slider's above.
+                        anchors { fill: parent; leftMargin: Theme.space2; rightMargin: Theme.space10 }
                         spacing: Theme.space12
-                        Icon { name: row.modelData.icon; size: 16; color: row.chosen ? Theme.textOnAccent : Theme.subtext0 }
+                        Icon { name: row.modelData.icon; size: 16; filled: row.chosen; color: row.chosen ? Theme.accentInk : Theme.overlay1 }
                         Label {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                             font.weight: row.chosen ? Font.DemiBold : Font.Normal
-                            color: row.chosen ? Theme.textOnAccent : Theme.text
+                            color: row.chosen ? Theme.accentInk : Theme.text
                             text: row.twin && row.modelData.sub ? `${row.modelData.label} · ${row.modelData.sub}` : row.modelData.label
                         }
                         Caption {
                             visible: !row.can
                             text: row.modelData.takenOver ? Tr.t("Off") : Tr.t("Not connected")
                         }
-                        Icon { visible: row.chosen; name: "check"; size: 15; color: Theme.textOnAccent }
+                        Icon { visible: row.chosen; name: "check"; size: 15; color: Theme.accentInk }
                     }
                     PressArea {
                         label: row.modelData.label
@@ -105,13 +106,15 @@ Item {
 
     PanelBody {
         id: content
-        spacing: Theme.space20
+        spacing: Theme.space14
 
         Section {
             title: Tr.t("Output")
             audio: root.sink?.audio ?? null
             devices: AudioDevices.outputs
         }
+
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
 
         Section {
             title: Tr.t("Input")
@@ -120,6 +123,8 @@ Item {
             devices: AudioDevices.inputs
         }
 
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
+
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Theme.space8
@@ -127,13 +132,15 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.space8
-                Label { Layout.fillWidth: true; elide: Text.ElideRight; text: Tr.t("Noise suppression") }
+                Caption { Layout.fillWidth: true; text: Tr.t("Noise suppression") }
                 Spinner { visible: NoiseSuppression.installing; size: 14 }
-                Choice {
-                    options: NoiseSuppression.labels.map((label, i) => ({ value: i, label: label }))
-                    current: NoiseSuppression.level
-                    onPicked: v => NoiseSuppression.set(v)
-                }
+            }
+            Choice {
+                Layout.fillWidth: true
+                stretch: true
+                options: NoiseSuppression.labels.map((label, i) => ({ value: i, label: label }))
+                current: NoiseSuppression.level
+                onPicked: v => NoiseSuppression.set(v)
             }
 
             Label {

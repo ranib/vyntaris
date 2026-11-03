@@ -23,8 +23,8 @@ RowLayout {
         implicitWidth: notesRow.implicitWidth + 28
         implicitHeight: 44
         radius: Theme.r(24)
-        color: Theme.alpha(Theme.crust, 0.6)
-        border { width: 1; color: Theme.glassRim }
+        color: Theme.tint(parent, Theme.crust, 0.6)
+        border { width: 1; color: Theme.rimOn(parent) }
         RowLayout {
             id: notesRow
             anchors.centerIn: parent

@@ -91,7 +91,7 @@ Scope {
             width: 420
             height: body.implicitHeight + 48
             radius: Theme.r(20)
-            border { width: 1; color: root.flow?.failed ? Theme.alpha(Theme.error, 0.6) : Theme.glassEdge }
+            border { width: 1; color: root.flow?.failed ? Theme.tint(parent, Theme.error, 0.6) : Theme.edgeOn(parent) }
             color: Theme.isDark ? Theme.crust : Theme.base
             transform: Translate { id: shakeShift }
             scale: root.open ? 1 : 0.94

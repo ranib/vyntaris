@@ -29,7 +29,7 @@ TileSurface {
             implicitWidth: 38
             implicitHeight: 38
             radius: 19
-            color: root.on ? Theme.accent : Theme.alpha(Theme.text, 0.08)
+            color: root.on ? Theme.accent : Theme.tint(parent, Theme.text, 0.08)
             Behavior on color { ColorAnim {} }
             Icon { anchors.centerIn: parent; name: root.icon; size: 18; color: root.on ? Theme.textOnAccent : Theme.subtext1 }
         }
@@ -55,7 +55,7 @@ TileSurface {
             implicitWidth: 32
             implicitHeight: 42
             radius: Theme.r(12)
-            color: moreArea.containsMouse ? Theme.alpha(Theme.text, 0.1) : "transparent"
+            color: moreArea.containsMouse ? Theme.tint(parent, Theme.text, 0.1) : "transparent"
             Behavior on color { ColorAnim {} }
             Icon { anchors.centerIn: parent; name: "chevron-right"; size: 14; color: root.on ? Theme.subtext1 : Theme.overlay1 }
             PressArea {

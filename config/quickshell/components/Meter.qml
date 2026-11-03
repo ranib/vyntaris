@@ -24,7 +24,7 @@ Item {
                 width: (root.width - (root.count - 1) * root.gap) / root.count
                 height: root.height
                 radius: Math.min(3, height / 4)
-                color: index >= root.lit ? Theme.alpha(Theme.text, 0.1)
+                color: index >= root.lit ? Theme.tint(parent, Theme.text, 0.1)
                     : root.dimmed ? Theme.overlay0
                     : index === root.lit - 1 && root.fillColor === Theme.accent ? Theme.accentBright : root.fillColor
                 Behavior on color { ColorAnim {} }

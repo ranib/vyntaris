@@ -77,11 +77,40 @@ Singleton {
     readonly property color glassTint:  isDark ? crust : base
     readonly property color glass:      glassTint
     readonly property color glassTop:   glassTint
-    readonly property color glassRim:   alpha(text, highContrast ? 0.45 : isDark ? 0.14 : 0.16)
-    readonly property color glassEdge:  isDark ? alpha("#ffffff", 0.24) : alpha(text, 0.14)
-    readonly property color hairline: alpha(text, highContrast ? 0.3 : isDark ? 0.08 : 0.12)
-    readonly property color hover:    alpha(text, isDark ? 0.06 : 0.08)
+    // Only solid colours: a tint is worked out over what's under it instead of drawn see-through.
+    // These are over the panels' glass; rimOn(), hairlineOn(), hoverOn() and edgeOn() are over whatever is under an item.
+    readonly property real rimAmount: highContrast ? 0.45 : isDark ? 0.14 : 0.16
+    readonly property real hairlineAmount: highContrast ? 0.3 : isDark ? 0.08 : 0.12
+    readonly property real hoverAmount: isDark ? 0.06 : 0.08
+    readonly property color glassRim:   tint(null, text, rimAmount)
+    readonly property color glassEdge:  isDark ? tint(null, "#ffffff", 0.24) : tint(null, text, 0.14)
+    readonly property color hairline: tint(null, text, hairlineAmount)
+    readonly property color hover:    tint(null, text, hoverAmount)
 
+    // What's under an item: the nearest one (itself or above it) that paints solid, by its `ground` (surfaces whose
+    // fill is drawn elsewhere, like slanted ones) or its colour as a Rectangle; else its window's colour; else the glass.
+    function groundOf(item) {
+        for (let p = item; p; p = p.parent) {
+            const g = p.ground !== undefined ? p.ground : p.radius !== undefined && p.visible ? p.color : undefined;
+            if (g !== undefined && g !== null && g.a === 1) return g;
+        }
+        const c = item?.Window?.window?.color;
+        return c && c.a === 1 ? c : glassTint;
+    }
+    function hex6(c) {
+        const s = String(c);
+        return s.length === 9 ? "#" + s.slice(3) : s;
+    }
+    // `c` at strength `a` over what's under `item`, as one solid colour.
+    function tint(item, c, a) {
+        return Palettes.mix(hex6(groundOf(item)), hex6(c), Math.max(0, Math.min(1, a)));
+    }
+    function rimOn(item) { return tint(item, text, rimAmount); }
+    function hairlineOn(item) { return tint(item, text, hairlineAmount); }
+    function hoverOn(item) { return tint(item, text, hoverAmount); }
+    function edgeOn(item) { return isDark ? tint(item, "#ffffff", 0.24) : tint(item, text, 0.14); }
+
+    // See-through, for what has to show what's behind it: shadows, and veils over a picture or the screen.
     function alpha(c, a) {
         return Qt.rgba(c.r, c.g, c.b, a);
     }

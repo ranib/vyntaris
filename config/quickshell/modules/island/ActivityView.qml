@@ -20,7 +20,7 @@ Item {
 
         Rectangle {
             implicitWidth: 40; implicitHeight: 40; radius: 20
-            color: Theme.alpha(root.view.color, 0.18)
+            color: Theme.tint(parent, root.view.color, 0.18)
             Icon { anchors.centerIn: parent; name: root.view.icon; size: 20; color: Theme.ink(root.view.color) }
             scale: Activities.shown ? 1 : 0.5
             Behavior on scale { Anim { duration: Theme.durationSlow; easing.bezierCurve: Theme.curveSpring } }

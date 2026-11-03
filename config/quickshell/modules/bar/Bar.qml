@@ -189,7 +189,7 @@ PanelWindow {
     component Divider: Rectangle {
         Layout.preferredWidth: 1
         Layout.preferredHeight: 12
-        color: Theme.hairline
+        color: Theme.hairlineOn(parent)
     }
 
     component Module: Item {
@@ -206,7 +206,7 @@ PanelWindow {
             anchors.fill: parent
             radius: Theme.r(height / 2)
             color: mod.active ? Theme.accent
-                 : area.containsMouse ? Theme.hover : "transparent"
+                 : area.containsMouse ? Theme.hoverOn(parent) : "transparent"
             Behavior on color { ColorAnim {} }
         }
 

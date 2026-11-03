@@ -107,7 +107,7 @@ Item {
                     onClicked: root.connected.disconnect()
                 }
             }
-            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairline }
+            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairlineOn(parent) }
         }
 
         component DeviceRow: PanelSurface {
@@ -117,7 +117,7 @@ Item {
             Layout.fillWidth: true
             implicitHeight: 40
             radius: Theme.r(12)
-            fill: hover.containsMouse ? Theme.hover : "transparent"
+            fill: hover.containsMouse ? Theme.hoverOn(parent) : "transparent"
             Behavior on fill { ColorAnim {} }
             PressArea { label: root.nameOf(row.modelData); id: hover; anchors.fill: parent; onClicked: root.choose(row.modelData) }
             RowLayout {

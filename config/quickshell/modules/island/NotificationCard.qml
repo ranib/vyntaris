@@ -49,8 +49,8 @@ Item {
                 width: parent.width
                 height: card.radius * 2
                 radius: card.radius
-                color: Theme.alpha(Theme.text, 0.05 - index * 0.015)
-                border { width: 1; color: Theme.alpha(Theme.text, 0.08 - index * 0.03) }
+                color: Theme.tint(parent, Theme.text, 0.05 - index * 0.015)
+                border { width: 1; color: Theme.tint(parent, Theme.text, 0.08 - index * 0.03) }
             }
         }
     }
@@ -63,8 +63,8 @@ Item {
         height: body.implicitHeight + 22
         radius: Theme.r(16)
         opacity: 1 - Math.min(1, Math.abs(offset) / width) * 0.9
-        readonly property color fill: hover.hovered ? Theme.alpha(Theme.text, 0.075) : Theme.alpha(Theme.text, 0.045)
-        readonly property color edge: root.critical ? Theme.alpha(Theme.error, 0.5) : hover.hovered ? Theme.alpha(Theme.accent, 0.3) : Theme.glassRim
+        readonly property color fill: hover.hovered ? Theme.tint(parent, Theme.text, 0.075) : Theme.tint(parent, Theme.text, 0.045)
+        readonly property color edge: root.critical ? Theme.tint(parent, Theme.error, 0.5) : hover.hovered ? Theme.tint(parent, Theme.accent, 0.3) : Theme.rimOn(parent)
         color: cardSlant.on ? "transparent" : fill
         border { width: cardSlant.on ? 0 : 1; color: edge }
         Slanted { id: cardSlant; fill: card.fill; stroke: card.edge; radius: card.radius }
@@ -146,7 +146,7 @@ Item {
                         radius: 10
                         opacity: hover.hovered || closeArea.activeFocus ? 1 : 0
                         Behavior on opacity { Anim { duration: Theme.durationFast } }
-                        color: closeArea.containsMouse ? Theme.alpha(Theme.error, 0.2) : Theme.alpha(Theme.text, 0.07)
+                        color: closeArea.containsMouse ? Theme.tint(parent, Theme.error, 0.2) : Theme.tint(parent, Theme.text, 0.07)
                         Icon { anchors.centerIn: parent; name: "close"; size: 10; stroke: 2.2; color: closeArea.containsMouse ? Theme.error : Theme.subtext0 }
                         PressArea { label: Tr.t("Dismiss"); id: closeArea; anchors.fill: parent; anchors.margins: -4; onClicked: away.start() }
                     }
@@ -178,7 +178,7 @@ Item {
                 implicitWidth: 46
                 implicitHeight: 46
                 radius: Theme.r(12)
-                color: Theme.alpha(Theme.text, 0.06)
+                color: Theme.tint(parent, Theme.text, 0.06)
                 Image {
                     id: picture
                     anchors.fill: parent

@@ -130,7 +130,7 @@ Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: Theme.navItemHeight
                         radius: Theme.navRadius
-                        color: current ? Theme.accent : navArea.containsMouse ? Theme.hover : "transparent"
+                        color: current ? Theme.accent : navArea.containsMouse ? Theme.hoverOn(parent) : "transparent"
                         Behavior on color { ColorAnim {} }
                         RowLayout {
                             anchors { fill: parent; leftMargin: Theme.space12; rightMargin: Theme.space12 }

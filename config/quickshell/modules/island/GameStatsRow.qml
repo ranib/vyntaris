@@ -17,7 +17,7 @@ RowLayout {
         Label { mono: true; font.weight: Font.Bold; font.features: { "tnum": 1 }; text: Games.fps }
         Caption { text: Tr.t("FPS") }
     }
-    Rectangle { visible: Games.fps >= 0 && (Games.cpuTemp >= 0 || Games.gpuTemp >= 0); implicitWidth: 1; implicitHeight: 12; color: Theme.hairline }
+    Rectangle { visible: Games.fps >= 0 && (Games.cpuTemp >= 0 || Games.gpuTemp >= 0); implicitWidth: 1; implicitHeight: 12; color: Theme.hairlineOn(parent) }
     RowLayout {
         visible: Games.cpuTemp >= 0
         spacing: Theme.space4

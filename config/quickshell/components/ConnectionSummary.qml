@@ -19,7 +19,7 @@ RowLayout {
         implicitWidth: 38
         implicitHeight: 38
         radius: 19
-        color: root.connected ? Theme.accent : Theme.alpha(Theme.text, 0.06)
+        color: root.connected ? Theme.accent : Theme.tint(parent, Theme.text, 0.06)
         Icon {
             anchors.centerIn: parent
             name: root.icon

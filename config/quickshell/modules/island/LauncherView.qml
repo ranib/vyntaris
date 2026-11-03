@@ -388,8 +388,8 @@ Item {
         width: parent.width - 2 * root.gap + 2 * root.out(y + height)
         height: Theme.controlHeight
         radius: Theme.r(height / 2)
-        fill: Theme.alpha(Theme.crust, 0.45)
-        edgeWidth: 1; edge: Theme.glassRim
+        fill: Theme.tint(parent, Theme.crust, 0.45)
+        edgeWidth: 1; edge: Theme.rimOn(parent)
 
         Rectangle {
             id: disc
@@ -679,7 +679,7 @@ Item {
                             Layout.fillWidth: true
                             visible: text !== ""
                             elide: Text.ElideRight
-                            color: entry.selected ? Theme.alpha(Theme.textOnAccent, 0.75) : Theme.overlay1
+                            color: entry.selected ? Theme.tint(parent, Theme.textOnAccent, 0.75) : Theme.overlay1
                             font.pixelSize: Theme.fontSizeSmall
                             text: entry.kind === "calc" ? (entry.modelData.date ? Tr.f("Exchange rate of {0}", entry.modelData.date) : entry.modelData.label ? Tr.t("Conversion") : Tr.t("Result"))
                                 : entry.kind === "command" ? Tr.t("Command")

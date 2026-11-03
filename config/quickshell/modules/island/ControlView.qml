@@ -127,7 +127,7 @@ Item {
                                     height: on ? 8 : 4
                                     anchors.verticalCenter: parent.verticalCenter
                                     radius: 2
-                                    color: !on ? Theme.alpha(Theme.text, 0.12) : index === progCells.lit - 1 ? Theme.accentBright : Theme.accent
+                                    color: !on ? Theme.tint(parent, Theme.text, 0.12) : index === progCells.lit - 1 ? Theme.accentBright : Theme.accent
                                     Behavior on height { Anim { duration: Theme.durationFast } }
                                 }
                             }
@@ -336,7 +336,7 @@ Item {
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent) }
 
         NotificationList {
             Layout.fillWidth: true

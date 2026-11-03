@@ -74,8 +74,8 @@ Item {
             visible: ArchWiki.installed
             implicitHeight: Theme.controlHeight
             radius: Theme.r(height / 2)
-            fill: Theme.alpha(Theme.crust, 0.45)
-            edgeWidth: 1; edge: Theme.glassRim
+            fill: Theme.tint(parent, Theme.crust, 0.45)
+            edgeWidth: 1; edge: Theme.rimOn(parent)
 
             Rectangle {
                 id: disc
@@ -158,7 +158,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: row.modelData.snippet ? 50 : 40
                     radius: Theme.r(12)
-                    fill: chosen ? Theme.accent : area.containsMouse ? Theme.hover : "transparent"
+                    fill: chosen ? Theme.accent : area.containsMouse ? Theme.hoverOn(parent) : "transparent"
                     Behavior on fill { ColorAnim {} }
                     RowLayout {
                         anchors { fill: parent; leftMargin: Theme.space14; rightMargin: Theme.space14 }

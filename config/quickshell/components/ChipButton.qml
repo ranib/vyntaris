@@ -14,8 +14,8 @@ Rectangle {
     implicitWidth: row.implicitWidth + 20
     implicitHeight: 24
     radius: Theme.r(12)
-    color: area.containsMouse ? fill : on ? Theme.accent : Theme.alpha(Theme.text, 0.06)
-    border { width: 1; color: area.containsMouse ? fill : on ? Theme.accent : Theme.glassRim }
+    color: area.containsMouse ? fill : on ? Theme.accent : Theme.tint(parent, Theme.text, 0.06)
+    border { width: 1; color: area.containsMouse ? fill : on ? Theme.accent : Theme.rimOn(parent) }
     Behavior on color { ColorAnim {} }
 
     readonly property color ink: area.containsMouse ? Theme.on(fill) : on ? Theme.textOnAccent : Theme.subtext0

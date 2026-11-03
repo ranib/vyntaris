@@ -103,8 +103,8 @@ Scope {
         signal clicked()
         default property alias content: tileBody.data
         radius: Theme.r(16)
-        color: selected ? Theme.alpha(Theme.text, 0.06) : tileArea.containsMouse ? Theme.hover : Theme.alpha(Theme.text, 0.04)
-        border { width: selected ? 2 : 1; color: selected ? Theme.accent : Theme.glassRim }
+        color: selected ? Theme.tint(parent, Theme.text, 0.06) : tileArea.containsMouse ? Theme.hoverOn(parent) : Theme.tint(parent, Theme.text, 0.04)
+        border { width: selected ? 2 : 1; color: selected ? Theme.accent : Theme.rimOn(parent) }
         scale: tileArea.pressed ? 0.96 : tileArea.containsMouse ? 1.02 : 1
         Behavior on scale { Anim { duration: Theme.durationNormal; easing.bezierCurve: Theme.curveSpring } }
         Behavior on color { ColorAnim {} }
@@ -251,7 +251,7 @@ Scope {
                             Layout.fillHeight: true
                             Layout.preferredWidth: Theme.navItemWidth + 2 * Theme.space24
                             radius: card.radius
-                            color: Theme.alpha(Theme.crust, 0.35)
+                            color: Theme.tint(parent, Theme.crust, 0.35)
                             Rectangle { anchors { top: parent.top; bottom: parent.bottom; right: parent.right } width: rail.radius; color: rail.color }
 
                             ColumnLayout {
@@ -427,8 +427,8 @@ Scope {
                                         }
                                         Rectangle {
                                             width: 30; height: 30; radius: 15
-                                            color: Config.theme.wallpaperAccent ? Theme.accent : Theme.alpha(Theme.text, 0.06)
-                                            border { width: Config.theme.wallpaperAccent ? 2 : 1; color: Config.theme.wallpaperAccent ? Theme.accent : Theme.glassRim }
+                                            color: Config.theme.wallpaperAccent ? Theme.accent : Theme.tint(parent, Theme.text, 0.06)
+                                            border { width: Config.theme.wallpaperAccent ? 2 : 1; color: Config.theme.wallpaperAccent ? Theme.accent : Theme.rimOn(parent) }
                                             Icon { anchors.centerIn: parent; name: "image"; size: 14; color: Config.theme.wallpaperAccent ? Theme.textOnAccent : Theme.subtext0 }
                                             PressArea { label: Tr.t("Accent from wallpaper"); role: Accessible.CheckBox; checked: Config.theme.wallpaperAccent; anchors.fill: parent; onClicked: { Config.theme.wallpaperAccent = !Config.theme.wallpaperAccent; root.changed(); } }
                                         }
@@ -454,7 +454,7 @@ Scope {
                                                 ClippingRectangle {
                                                     anchors.fill: parent
                                                     radius: 10
-                                                    color: Theme.alpha(Theme.text, 0.06)
+                                                    color: Theme.tint(parent, Theme.text, 0.06)
                                                     Image {
                                                         anchors.fill: parent
                                                         source: wallTile.path ? "file://" + Config.wallpaperFileOf(wallTile.path) : ""
@@ -695,8 +695,8 @@ Scope {
                                                 spacing: Theme.space10
                                                 Rectangle {
                                                     implicitWidth: keyText.implicitWidth + 18; implicitHeight: 28; radius: 8
-                                                    color: Theme.alpha(Theme.text, 0.07)
-                                                    border { width: 1; color: Theme.glassRim }
+                                                    color: Theme.tint(parent, Theme.text, 0.07)
+                                                    border { width: 1; color: Theme.rimOn(parent) }
                                                     Label { id: keyText; anchors.centerIn: parent; mono: true; font.pixelSize: Theme.fontSizeSmall; text: modelData[0] }
                                                 }
                                                 Label { color: Theme.subtext0; text: modelData[1] }

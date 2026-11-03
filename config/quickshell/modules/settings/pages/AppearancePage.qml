@@ -60,7 +60,7 @@ SettingsPage {
                 visible: WallpaperColors.ready && WallpaperColors.chosen !== ""
                 implicitWidth: 18; implicitHeight: 18; radius: 9
                 color: Theme.colorOf(WallpaperColors.chosen)
-                border { width: 1; color: Theme.glassRim }
+                border { width: 1; color: Theme.rimOn(parent) }
             }
             Switch { checked: Config.theme.wallpaperAccent; onToggled: on => { Config.theme.wallpaperAccent = on; Config.saveSoon(); } }
         }

@@ -62,8 +62,8 @@ ColumnLayout {
             implicitWidth: 28
             implicitHeight: 28
             radius: 14
-            color: Notifications.dnd ? Theme.accent : silentArea.containsMouse ? Theme.alpha(Theme.text, 0.12) : Theme.alpha(Theme.text, 0.06)
-            border { width: 1; color: Notifications.dnd ? Theme.accent : Theme.glassRim }
+            color: Notifications.dnd ? Theme.accent : silentArea.containsMouse ? Theme.tint(parent, Theme.text, 0.12) : Theme.tint(parent, Theme.text, 0.06)
+            border { width: 1; color: Notifications.dnd ? Theme.accent : Theme.rimOn(parent) }
             Behavior on color { ColorAnim {} }
             Icon { anchors.centerIn: parent; name: Notifications.dnd ? "bell-off" : "bell"; size: 14; color: Notifications.dnd ? Theme.textOnAccent : Theme.subtext0 }
             PressArea { label: Tr.t("Do not disturb"); role: Accessible.CheckBox; checked: Notifications.dnd; id: silentArea; anchors.fill: parent; onClicked: Notifications.dnd = !Notifications.dnd }

@@ -78,7 +78,7 @@ Item {
                         height: on ? 10 : 6
                         anchors.verticalCenter: parent.verticalCenter
                         radius: 2
-                        color: !on ? Theme.alpha(Theme.text, 0.1)
+                        color: !on ? Theme.tint(parent, Theme.text, 0.1)
                             : root.view.dimmed ? Theme.overlay0
                             : index === segments.lit - 1 ? Theme.accentBright : Theme.accent
                         Behavior on height { Anim { duration: Theme.durationFast } }

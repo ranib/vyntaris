@@ -23,7 +23,7 @@ Item {
         preferredRendererType: Shape.CurveRenderer
         ShapePath {
             fillColor: "transparent"
-            strokeColor: Theme.alpha(root.color, 0.25)
+            strokeColor: Theme.tint(parent, root.color, 0.25)
             strokeWidth: root.thickness
             PathAngleArc {
                 centerX: root.size / 2; centerY: root.size / 2

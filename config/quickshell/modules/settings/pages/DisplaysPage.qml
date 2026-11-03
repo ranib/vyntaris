@@ -38,8 +38,8 @@ SettingsPage {
         Layout.fillWidth: true
         implicitHeight: 220
         radius: Theme.r(12)
-        color: Theme.alpha(Theme.crust, 0.45)
-        border { width: 1; color: Theme.glassRim }
+        color: Theme.tint(parent, Theme.crust, 0.45)
+        border { width: 1; color: Theme.rimOn(parent) }
 
         readonly property var mons: Hyprland.monitors.values.map(m => {
             const o = m.lastIpcObject ?? {};

@@ -26,8 +26,8 @@ Rectangle {
     radius: Theme.r(implicitHeight / 2)
     opacity: active ? 1 : Theme.disabledOpacity
     color: filled ? (area.containsMouse && active ? Qt.lighter(fill, 1.08) : fill)
-                  : (area.containsMouse && active ? Theme.alpha(Theme.text, 0.12) : Theme.alpha(Theme.text, 0.06))
-    border { width: filled ? 0 : 1; color: Theme.glassRim }
+                  : (area.containsMouse && active ? Theme.tint(parent, Theme.text, 0.12) : Theme.tint(parent, Theme.text, 0.06))
+    border { width: filled ? 0 : 1; color: Theme.rimOn(parent) }
     scale: area.pressed && active ? 0.95 : 1
     Behavior on color { ColorAnim {} }
     Behavior on scale { Anim { duration: Theme.durationFast; easing.bezierCurve: Theme.curveSpring } }

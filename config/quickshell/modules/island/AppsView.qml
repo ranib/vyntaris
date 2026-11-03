@@ -107,7 +107,7 @@ Item {
                 height: Theme.navItemHeight
                 SlantShape {
                     anchors.fill: parent
-                    fill: nav.current ? Theme.accent : navArea.containsMouse ? Theme.hover : "transparent"
+                    fill: nav.current ? Theme.accent : navArea.containsMouse ? Theme.hoverOn(parent) : "transparent"
                     radius: Theme.navRadius
                     edges: ({ lt: root.out(side.y + nav.y) - nav.lean, lb: 0, rt: 0, rb: 0 })
                     Behavior on fill { ColorAnim {} }
@@ -145,8 +145,8 @@ Item {
 
         SlantShape {
             anchors.fill: parent
-            fill: Theme.alpha(Theme.crust, 0.45)
-            stroke: Theme.glassRim
+            fill: Theme.tint(parent, Theme.crust, 0.45)
+            stroke: Theme.rimOn(parent)
             radius: Theme.r(field.height / 2)
             edges: ({ lt: 0, lb: 0, rt: root.out(field.y) - field.lean, rb: 0 })
         }

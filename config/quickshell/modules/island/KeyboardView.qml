@@ -39,7 +39,7 @@ Item {
         signal clicked()
         width: 18; height: 18; radius: 9
         color: badgeArea.containsMouse ? fill : Theme.surface1
-        border { width: 1; color: Theme.glassRim }
+        border { width: 1; color: Theme.rimOn(parent) }
         Behavior on color { ColorAnim {} }
         Icon { anchors.centerIn: parent; name: badge.icon; size: 10; stroke: 2.2; color: badgeArea.containsMouse ? Theme.textOnAccent : Theme.text }
         PressArea { label: badge.label; id: badgeArea; anchors.fill: parent; onClicked: badge.clicked() }
@@ -144,8 +144,8 @@ Item {
                         Layout.preferredWidth: 1
                         implicitHeight: 42
                         radius: Theme.r(12)
-                        fill: index === 0 ? Theme.accent : hitArea.containsMouse ? Theme.hover : Theme.alpha(Theme.text, 0.05)
-                        edgeWidth: 1; edge: index === 0 ? Theme.accent : Theme.glassRim
+                        fill: index === 0 ? Theme.accent : hitArea.containsMouse ? Theme.hoverOn(parent) : Theme.tint(parent, Theme.text, 0.05)
+                        edgeWidth: 1; edge: index === 0 ? Theme.accent : Theme.rimOn(parent)
                         Behavior on fill { ColorAnim {} }
                         RowLayout {
                             anchors { fill: parent; leftMargin: Theme.space12; rightMargin: Theme.space10 }

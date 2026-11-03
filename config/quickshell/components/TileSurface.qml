@@ -17,8 +17,10 @@ Rectangle {
 
     radius: Theme.r(16)
     readonly property color fill: marked && solid ? (hovered ? Qt.lighter(Theme.accent, 1.08) : Theme.accent)
-        : hovered || marked ? Theme.alpha(Theme.text, 0.09) : Theme.alpha(Theme.text, 0.05)
-    readonly property color edge: marked ? Theme.accent : Theme.glassRim
+        : hovered || marked ? Theme.tint(parent, Theme.text, 0.09) : Theme.tint(parent, Theme.text, 0.05)
+    readonly property color edge: marked ? Theme.accent : Theme.rimOn(parent)
+    // Slanted, the fill is drawn by the shape and `color` is clear, so what is on it tints over `fill`.
+    readonly property color ground: fill
     color: slant.on ? "transparent" : fill
     border { width: slant.on ? 0 : 1; color: edge }
     Slanted { id: slant; fill: root.fill; stroke: root.edge; radius: root.radius }

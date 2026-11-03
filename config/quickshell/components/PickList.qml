@@ -23,7 +23,7 @@ ListView {
         width: root.width
         height: root.rowHeight
         radius: Theme.r(12)
-        fill: chosen ? Theme.accent : area.containsMouse ? Theme.hover : "transparent"
+        fill: chosen ? Theme.accent : area.containsMouse ? Theme.hoverOn(parent) : "transparent"
         Behavior on fill { ColorAnim {} }
 
         RowLayout {
@@ -39,7 +39,7 @@ ListView {
             Label {
                 visible: text !== ""
                 font.pixelSize: Theme.fontSizeLabel
-                color: row.chosen ? Theme.alpha(Theme.textOnAccent, 0.75) : Theme.overlay1
+                color: row.chosen ? Theme.tint(parent, Theme.textOnAccent, 0.75) : Theme.overlay1
                 text: row.modelData.caption ?? ""
             }
             Icon { visible: row.chosen; name: "check"; size: 16; color: Theme.textOnAccent }

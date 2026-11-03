@@ -32,7 +32,7 @@ PanelWindow {
         y: -radius
         radius: Theme.r(12)
         color: Theme.glassTop
-        border { width: 1; color: Theme.glassRim }
+        border { width: 1; color: Theme.rimOn(parent) }
         opacity: win.shown ? 1 : 0
         Behavior on opacity { Anim { id: fade; duration: Theme.durationNormal } }
 

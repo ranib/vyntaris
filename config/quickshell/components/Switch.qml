@@ -16,7 +16,7 @@ Rectangle {
     radius: Theme.r(height / 2)
     opacity: enabled ? 1 : Theme.disabledOpacity
     color: checked ? (area.containsMouse ? Qt.lighter(Theme.accent, 1.08) : Theme.accent)
-                   : Theme.alpha(Theme.text, area.containsMouse ? 0.2 : 0.12)
+                   : Theme.tint(parent, Theme.text, area.containsMouse ? 0.2 : 0.12)
     border { width: 1; color: checked ? Theme.accent : Theme.controlEdge }
     Behavior on color { ColorAnim {} }
 

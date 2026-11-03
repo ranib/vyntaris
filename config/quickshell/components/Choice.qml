@@ -40,8 +40,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Theme.r(height / 2)
-        color: Theme.alpha(Theme.crust, 0.45)
-        border { width: 1; color: Theme.glassRim }
+        color: Theme.tint(parent, Theme.crust, 0.45)
+        border { width: 1; color: Theme.rimOn(parent) }
     }
 
     Rectangle {

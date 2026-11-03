@@ -120,7 +120,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent) }
         }
 
         ColumnLayout {
@@ -138,7 +138,7 @@ Item {
 
             LinkStats { link: wiredLink }
 
-            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; visible: !root.wiredOnly; implicitHeight: 1; color: Theme.hairline }
+            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; visible: !root.wiredOnly; implicitHeight: 1; color: Theme.hairlineOn(parent) }
         }
 
         Label {
@@ -181,7 +181,7 @@ Item {
 
             LinkStats { link: link }
 
-            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairline }
+            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairlineOn(parent) }
             RowLayout {
                 Layout.fillWidth: true
                 Caption { Layout.fillWidth: true; text: Tr.t("Nearby") }
@@ -217,7 +217,7 @@ Item {
                 height: slot.height
                 radius: Theme.r(12)
                 fill: row.modelData.connected ? Theme.accent
-                     : hover.containsMouse ? Theme.hover : "transparent"
+                     : hover.containsMouse ? Theme.hoverOn(parent) : "transparent"
                 edgeWidth: 0
                 Behavior on fill { ColorAnim {} }
 
@@ -258,7 +258,7 @@ Item {
                                 height: 5 + index * 2.5
                                 radius: 1.5
                                 color: index < mini.lit ? (row.modelData.connected ? Theme.textOnAccent : Theme.text)
-                                                        : Theme.alpha(row.modelData.connected ? Theme.textOnAccent : Theme.text, 0.2)
+                                                        : Theme.tint(parent, row.modelData.connected ? Theme.textOnAccent : Theme.text, 0.2)
                             }
                         }
                     }

@@ -40,7 +40,10 @@ Item {
     implicitHeight: Math.max(52, row.implicitHeight + 2 * Theme.space10)
     implicitWidth: row.implicitWidth + 2 * Theme.space16
 
+    // The card is drawn beside the controls, not around them: they tint over it all the same.
+    readonly property color ground: card.color
     Rectangle {
+        id: card
         anchors.fill: parent
         // Solid, like GTK's cards (card_bg_color in AppTheme).
         color: Theme.isDark ? Theme.surface0 : Theme.mantle

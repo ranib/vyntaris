@@ -135,8 +135,8 @@ Scope {
                                                 width: Math.max(30, key.implicitWidth + 18)
                                                 height: 30
                                                 radius: Theme.r(10)
-                                                color: Theme.alpha(Theme.text, 0.04)
-                                                border { width: 1; color: Theme.glassRim }
+                                                color: Theme.tint(parent, Theme.text, 0.04)
+                                                border { width: 1; color: Theme.rimOn(parent) }
                                                 Label {
                                                     id: key
                                                     anchors.centerIn: parent

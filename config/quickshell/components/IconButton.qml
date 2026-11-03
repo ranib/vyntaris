@@ -16,7 +16,7 @@ Rectangle {
     radius: size / 2
     opacity: active ? 1 : Theme.disabledOpacity
     color: primary ? (area.containsMouse && active ? Qt.lighter(Theme.accent, 1.08) : Theme.accent)
-                   : (area.containsMouse && active ? Theme.hover : "transparent")
+                   : (area.containsMouse && active ? Theme.hoverOn(parent) : "transparent")
     scale: area.pressed && active ? 0.9 : 1
     Behavior on color { ColorAnim {} }
     Behavior on scale { Anim { duration: Theme.durationFast; easing.bezierCurve: Theme.curveSpring } }

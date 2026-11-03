@@ -160,7 +160,7 @@ Scope {
             height: Math.min(parent.height * 0.82, 1000)
             radius: Theme.r(24)
             color: Theme.base
-            border { width: 1; color: Theme.glassRim }
+            border { width: 1; color: Theme.rimOn(parent) }
             focus: true
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape || event.key === Qt.Key_Space) root.close();
@@ -277,14 +277,14 @@ Scope {
                         id: grid
                         readonly property int cell: 120
                         Row {
-                            Rectangle { width: 40; height: 26; color: Theme.alpha(Theme.text, 0.06) }
+                            Rectangle { width: 40; height: 26; color: Theme.tint(parent, Theme.text, 0.06) }
                             Repeater {
                                 model: root.columns
                                 Rectangle {
                                     required property int index
                                     width: grid.cell; height: 26
-                                    color: Theme.alpha(Theme.text, 0.06)
-                                    border { width: 1; color: Theme.hairline }
+                                    color: Theme.tint(parent, Theme.text, 0.06)
+                                    border { width: 1; color: Theme.hairlineOn(parent) }
                                     Label { anchors.centerIn: parent; color: Theme.overlay1; font.pixelSize: Theme.fontSizeSmall; text: String.fromCharCode(65 + index % 26) + (index >= 26 ? Math.floor(index / 26) : "") }
                                 }
                             }
@@ -297,8 +297,8 @@ Scope {
                                 required property int index
                                 Rectangle {
                                     width: 40; height: 26
-                                    color: Theme.alpha(Theme.text, 0.06)
-                                    border { width: 1; color: Theme.hairline }
+                                    color: Theme.tint(parent, Theme.text, 0.06)
+                                    border { width: 1; color: Theme.hairlineOn(parent) }
                                     Label { anchors.centerIn: parent; color: Theme.overlay1; font.pixelSize: Theme.fontSizeSmall; text: sheetRow.index + 1 }
                                 }
                                 Repeater {
@@ -308,7 +308,7 @@ Scope {
                                         readonly property string value: sheetRow.modelData[index] ?? ""
                                         width: grid.cell; height: 26
                                         color: "transparent"
-                                        border { width: 1; color: Theme.hairline }
+                                        border { width: 1; color: Theme.hairlineOn(parent) }
                                         Label {
                                             anchors { fill: parent; leftMargin: Theme.space6; rightMargin: Theme.space6 }
                                             verticalAlignment: Text.AlignVCenter

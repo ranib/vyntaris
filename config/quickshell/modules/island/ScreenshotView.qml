@@ -34,7 +34,7 @@ Item {
                 implicitWidth: 152
                 implicitHeight: 86
                 radius: Theme.r(12)
-                color: Theme.alpha(Theme.text, 0.06)
+                color: Theme.tint(parent, Theme.text, 0.06)
                 Image {
                     anchors.fill: parent
                     source: Screenshot.lastPath ? "file://" + Screenshot.lastPath : ""

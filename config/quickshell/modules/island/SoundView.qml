@@ -68,7 +68,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: 38
                     radius: Theme.r(12)
-                    fill: area.containsMouse && can && !chosen ? Theme.hover : "transparent"
+                    fill: area.containsMouse && can && !chosen ? Theme.hoverOn(parent) : "transparent"
                     opacity: can ? 1 : Theme.disabledOpacity
                     Behavior on fill { ColorAnim {} }
                     RowLayout {
@@ -114,7 +114,7 @@ Item {
             devices: AudioDevices.outputs
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent) }
 
         Section {
             title: Tr.t("Input")
@@ -123,7 +123,7 @@ Item {
             devices: AudioDevices.inputs
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent) }
 
         ColumnLayout {
             Layout.fillWidth: true

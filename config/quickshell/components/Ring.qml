@@ -34,7 +34,7 @@ Item {
     Shape {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
-        Arc { strokeColor: Theme.alpha(Theme.text, 0.1); sweep: 270 }
+        Arc { strokeColor: Theme.tint(parent, Theme.text, 0.1); sweep: 270 }
         Arc { strokeColor: root.color; sweep: 270 * root.animated }
     }
 

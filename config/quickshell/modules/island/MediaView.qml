@@ -43,7 +43,7 @@ Item {
             Rectangle {
                 required property var modelData
                 implicitWidth: 8; implicitHeight: 8; radius: 4
-                color: modelData === root.player ? Theme.accent : Theme.alpha(Theme.text, 0.2)
+                color: modelData === root.player ? Theme.accent : Theme.tint(parent, Theme.text, 0.2)
                 PressArea { label: modelData.identity ?? ""; anchors.fill: parent; anchors.margins: -4; onClicked: root.player = modelData }
             }
         }
@@ -68,8 +68,8 @@ Item {
             implicitWidth: 112
             implicitHeight: 112
             radius: Theme.r(16)
-            color: Theme.alpha(Theme.text, 0.06)
-            border { width: 1; color: Theme.glassRim }
+            color: Theme.tint(parent, Theme.text, 0.06)
+            border { width: 1; color: Theme.rimOn(parent) }
 
             Image {
                 anchors.fill: parent

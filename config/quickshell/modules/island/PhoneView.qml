@@ -56,7 +56,7 @@ Item {
             implicitHeight: 40
             radius: Theme.r(12)
             opacity: enabled ? 1 : Theme.disabledOpacity
-            fill: hover.containsMouse ? Theme.hover : "transparent"
+            fill: hover.containsMouse ? Theme.hoverOn(parent) : "transparent"
             Behavior on fill { ColorAnim {} }
             PressArea {
                 label: row.title
@@ -109,7 +109,7 @@ Item {
                     Layout.fillWidth: true
                     implicitHeight: 48
                     radius: Theme.r(12)
-                    fill: Theme.alpha(Theme.text, 0.05)
+                    fill: Theme.tint(parent, Theme.text, 0.05)
                     edgeWidth: 1; edge: Theme.accent
                     RowLayout {
                         anchors { fill: parent; leftMargin: Theme.space12; rightMargin: Theme.space8 }
@@ -178,7 +178,7 @@ Item {
                 Layout.fillWidth: true
                 visible: root.mine !== null
                 spacing: Theme.space2
-                Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; Layout.bottomMargin: Theme.space6; implicitHeight: 1; color: Theme.hairline }
+                Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; Layout.bottomMargin: Theme.space6; implicitHeight: 1; color: Theme.hairlineOn(parent) }
                 Caption { Layout.bottomMargin: Theme.space4; text: Tr.t("Shared") }
                 component Share: PanelRow {
                     property string key
@@ -209,7 +209,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairline; visible: Phone.running }
+            Rectangle { Layout.fillWidth: true; Layout.topMargin: Theme.space4; implicitHeight: 1; color: Theme.hairlineOn(parent); visible: Phone.running }
             RowLayout {
                 Layout.fillWidth: true
                 visible: Phone.running

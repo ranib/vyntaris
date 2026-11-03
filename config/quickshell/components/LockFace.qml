@@ -169,7 +169,7 @@ Item {
         width: 400
         height: cardColumn.implicitHeight + 44
         radius: Theme.r(20)
-        border { width: 1; color: root.wrong ? Theme.alpha(Theme.error, 0.6) : Theme.glassEdge }
+        border { width: 1; color: root.wrong ? Theme.tint(parent, Theme.error, 0.6) : Theme.edgeOn(parent) }
         color: Theme.isDark ? Theme.crust : Theme.base
         Behavior on border.color { ColorAnim {} }
 

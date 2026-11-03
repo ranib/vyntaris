@@ -83,7 +83,7 @@ Item {
                     width: (cells.width - (cells.count - 1) * cells.spacing) / cells.count
                     height: 14
                     radius: 3
-                    color: index < cells.filled ? root.tint : Theme.alpha(Theme.text, 0.1)
+                    color: index < cells.filled ? root.tint : Theme.tint(parent, Theme.text, 0.1)
 
                     SequentialAnimation on opacity {
                         running: root.b.charging && !root.b.full && index === cells.filled - 1 && Theme.speed > 0
@@ -113,7 +113,7 @@ Item {
                 font.pixelSize: Theme.fontSizeLabel
                 text: root.b.health >= 0 ? Math.round(root.b.health * 100) + "%" : "—"
             }
-            Rectangle { implicitWidth: 1; implicitHeight: 12; color: Theme.hairline }
+            Rectangle { implicitWidth: 1; implicitHeight: 12; color: Theme.hairlineOn(parent) }
             Label { overline: true; color: Theme.overlay1; text: Tr.t("Cycles") }
             Label {
                 mono: true
@@ -122,7 +122,7 @@ Item {
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline; visible: Battery.users.length > 0 }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent); visible: Battery.users.length > 0 }
 
         Label { visible: Battery.users.length > 0; overline: true; color: Theme.overlay1; text: Tr.t("Using the most") }
         Repeater {
@@ -149,7 +149,7 @@ Item {
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairline }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent) }
 
         RowLayout {
             Layout.fillWidth: true

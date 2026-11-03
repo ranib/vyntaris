@@ -222,7 +222,8 @@ PanelWindow {
             width: 320
             height: 4
             radius: 2
-            color: Qt.rgba(root.text.r, root.text.g, root.text.b, 0.15)
+            // Solid: the text colour at 15% over the middle of the screen's gradient.
+            color: Qt.tint(Qt.tint(root.top, Qt.rgba(root.bottom.r, root.bottom.g, root.bottom.b, 0.5)), Qt.rgba(root.text.r, root.text.g, root.text.b, 0.15))
             Rectangle {
                 width: parent.width * Math.max(0.02, CloudBackup.progress)
                 height: parent.height

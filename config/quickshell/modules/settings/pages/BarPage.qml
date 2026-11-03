@@ -73,8 +73,8 @@ SettingsPage {
                     readonly property var look: BarStyles.preview(modelData.id)
                     width: 92; height: 74; radius: 12
                     clip: true
-                    color: current ? Theme.alpha(Theme.text, 0.06) : styleArea.containsMouse ? Theme.hover : Theme.alpha(Theme.text, 0.04)
-                    border { width: current ? 2 : 1; color: current ? Theme.accent : Theme.glassRim }
+                    color: current ? Theme.tint(parent, Theme.text, 0.06) : styleArea.containsMouse ? Theme.hoverOn(parent) : Theme.tint(parent, Theme.text, 0.04)
+                    border { width: current ? 2 : 1; color: current ? Theme.accent : Theme.rimOn(parent) }
                     Behavior on color { ColorAnim {} }
                     BarShape {
                         x: 1; y: 8

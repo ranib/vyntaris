@@ -14,8 +14,8 @@ Rectangle {
     implicitWidth: 380
     implicitHeight: artSize + 24
     radius: Theme.r(20)
-    color: Theme.alpha(Theme.crust, 0.6)
-    border { width: 1; color: Theme.glassRim }
+    color: Theme.tint(parent, Theme.crust, 0.6)
+    border { width: 1; color: Theme.rimOn(parent) }
 
     RowLayout {
         anchors { fill: parent; margins: Theme.space12 }
@@ -25,7 +25,7 @@ Rectangle {
             implicitWidth: root.artSize
             implicitHeight: root.artSize
             radius: Theme.r(12)
-            color: Theme.alpha(Theme.text, 0.08)
+            color: Theme.tint(parent, Theme.text, 0.08)
             Image {
                 anchors.fill: parent
                 source: root.player?.trackArtUrl ?? ""

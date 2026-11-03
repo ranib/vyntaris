@@ -33,9 +33,9 @@ FocusScope {
                 height: on || run > 0.3 ? 16 : 10
                 anchors.verticalCenter: parent.verticalCenter
                 radius: 2
-                color: root.wrong ? Theme.alpha(Theme.error, 0.75)
-                    : root.busy ? Theme.alpha(Theme.accent, 0.15 + 0.85 * run)
-                    : !on ? Theme.alpha(Theme.text, 0.16)
+                color: root.wrong ? Theme.tint(parent, Theme.error, 0.75)
+                    : root.busy ? Theme.tint(parent, Theme.accent, 0.15 + 0.85 * run)
+                    : !on ? Theme.tint(parent, Theme.text, 0.16)
                     : index === root.lit - 1 ? Theme.accentBright : Theme.accent
                 Behavior on height { Anim { duration: Theme.durationFast } }
                 Behavior on color { ColorAnim {} }

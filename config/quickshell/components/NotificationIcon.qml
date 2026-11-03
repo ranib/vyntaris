@@ -28,7 +28,7 @@ ClippingRectangle {
     implicitWidth: size
     implicitHeight: size
     radius: size * 0.3
-    color: hasImage ? "transparent" : Theme.alpha(tint, 0.16)
+    color: hasImage ? "transparent" : Theme.tint(parent, tint, 0.16)
 
     Image {
         id: picture

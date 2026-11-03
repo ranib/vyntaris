@@ -21,7 +21,7 @@ PanelSurface {
     implicitWidth: 220
     implicitHeight: Theme.controlHeight
     radius: Theme.r(height / 2)
-    fill: Theme.alpha(Theme.text, input.activeFocus ? 0.09 : 0.05)
+    fill: Theme.tint(parent, Theme.text, input.activeFocus ? 0.09 : 0.05)
     edgeWidth: input.activeFocus ? 2 : 1
     edge: invalid ? Theme.error : input.activeFocus ? Theme.accentInk : Theme.controlEdge
     Behavior on fill { ColorAnim {} }

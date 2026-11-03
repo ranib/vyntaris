@@ -25,7 +25,7 @@ Item {
                 height: on ? 12 : 6
                 anchors.verticalCenter: parent.verticalCenter
                 radius: 2
-                color: !on ? Theme.alpha(Theme.text, 0.1)
+                color: !on ? Theme.tint(parent, Theme.text, 0.1)
                     : index === root.lit - 1 && root.fillColor === Theme.accent ? Theme.accentBright : root.fillColor
                 Behavior on height { Anim { duration: Theme.durationFast } }
                 Behavior on color { ColorAnim {} }

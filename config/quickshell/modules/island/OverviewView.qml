@@ -115,8 +115,8 @@ Item {
                     anchors.fill: parent
                     radius: Theme.r(16)
                     color: card.selected ? Theme.accent
-                        : area.containsMouse ? Theme.alpha(Theme.text, 0.09) : Theme.alpha(Theme.text, 0.05)
-                    border { width: 1; color: card.selected ? Theme.accent : Theme.glassRim }
+                        : area.containsMouse ? Theme.tint(parent, Theme.text, 0.09) : Theme.tint(parent, Theme.text, 0.05)
+                    border { width: 1; color: card.selected ? Theme.accent : Theme.rimOn(parent) }
                     Behavior on color { ColorAnim {} }
                 }
 

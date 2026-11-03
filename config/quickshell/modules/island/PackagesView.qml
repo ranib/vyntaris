@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.config
 import qs.components
 import "../../components/Slant.js" as Slant
+import "../../services/Terminal.js" as Terminal
 import qs.services
 
 Item {
@@ -41,8 +42,47 @@ Item {
         height: root.hang - 18
         radius: Theme.r(Theme.radius)
 
+        // What pacman, yay or a terminal is printing, drawn as a terminal draws it, like the updates' console:
+        // a line that redraws itself stays one line, in its colours, with the progress bar.
+        ListView {
+            id: term
+            readonly property bool live: (root.pk?.source ?? "log") !== "log"
+            readonly property var colours: ({ red: Theme.error, green: Theme.success, yellow: Theme.yellow, blue: Theme.accentInk,
+                magenta: Theme.mauve, cyan: Theme.sky, white: Theme.overlay1, dim: Theme.overlay0 })
+            visible: live
+            anchors { fill: parent; margins: Theme.space10 }
+            clip: true
+            model: live ? Terminal.screen((root.pk?.lines ?? []).join("\n"), 200) : []
+            onCountChanged: if (following) Qt.callLater(positionViewAtEnd)
+            property bool following: true
+            onMovementEnded: following = atYEnd
+            FontMetrics { id: cell; font.family: Theme.monoFamily; font.pixelSize: Theme.fontSizeSmall }
+            delegate: Item {
+                id: termRow
+                required property var modelData
+                readonly property var parts: Terminal.split(modelData)
+                width: ListView.view.width
+                height: cell.lineSpacing
+                Text {
+                    id: leftText
+                    font: cell.font
+                    color: Theme.text
+                    textFormat: Text.StyledText
+                    text: Terminal.html(termRow.parts.left, term.colours)
+                }
+                Text {
+                    readonly property int cells: Math.floor((termRow.width - leftText.implicitWidth) / cell.averageCharacterWidth) - 1
+                    anchors.right: parent.right
+                    font: cell.font
+                    color: Theme.text
+                    textFormat: Text.StyledText
+                    text: Terminal.html(Terminal.candy(termRow.parts.right, cells), term.colours)
+                }
+            }
+        }
         ListView {
             id: log
+            visible: !term.live
             anchors { fill: parent; margins: Theme.space10 }
             clip: true
             model: ListModel { id: shown }
@@ -77,7 +117,7 @@ Item {
         }
         Label {
             anchors.centerIn: parent
-            visible: log.count === 0
+            visible: term.live ? term.count === 0 : log.count === 0
             color: Theme.overlay1
             text: Activities.installing ? Tr.t("Starting…") : Tr.t("No install since the shell started")
         }

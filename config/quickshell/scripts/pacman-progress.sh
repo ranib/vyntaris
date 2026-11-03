@@ -25,7 +25,9 @@ run_dir="${XDG_RUNTIME_DIR:-/tmp}"
 screen="$(window_screen)" && source=terminal || source=log
 if [ "$source" = log ]; then
     run="$(find "$run_dir/vyntaris-upgrade" "$run_dir/vyntaris-aur" -maxdepth 1 -name '*log' -newermt "@$((since - 1))" -type f 2>/dev/null | head -1)"
-    [ -n "$run" ] && screen="$(tail -n 80 "$run" | tr '\r' '\n' | grep -v '^\s*$' | tail -n 60)" && source=run
+    # As written, carriage returns and colours too: the view draws it like a terminal (Terminal.screen), so a
+    # progress line that redraws itself stays one line.
+    [ -n "$run" ] && screen="$(tail -c 24000 "$run")" && source=run
 fi
 tail -n 4000 /var/log/pacman.log 2>/dev/null | awk -v from="$from" -v since="$since" -v busy="$busy" -v source="$source" '
     substr($1, 2, 19) < from { next }

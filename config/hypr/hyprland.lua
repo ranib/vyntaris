@@ -22,8 +22,17 @@ local accent  = require("lib.colors").accent(palette, accentName)
 
 local animSpeed = tonumber(settings.theme.animationSpeed) or 1
 
-local function rgba(hex, alpha)
-    return "rgba(" .. hex .. (alpha or "ff") .. ")"
+local function rgba(hex)
+    return "rgba(" .. hex .. "ff)"
+end
+-- Only solid colours: `b` at strength `t` over `a`, as one colour (both rrggbb).
+local function mix(a, b, t)
+    local out = ""
+    for i = 1, 5, 2 do
+        local x, y = tonumber(a:sub(i, i + 1), 16), tonumber(b:sub(i, i + 1), 16)
+        out = out .. string.format("%02x", math.floor(x + (y - x) * t + 0.5))
+    end
+    return out
 end
 
 hl.monitor({
@@ -88,8 +97,8 @@ hl.config({
         border_size = settings.windows.border,
 
         col = {
-            active_border   = { colors = { rgba(accent), rgba(accent, "40") }, angle = 135 },
-            inactive_border = rgba(palette.surface0, "cc"),
+            active_border   = { colors = { rgba(accent), rgba(mix(palette.base, accent, 0.25)) }, angle = 135 },
+            inactive_border = rgba(mix(palette.base, palette.surface0, 0.8)),
         },
 
         resize_on_border        = true,
@@ -106,9 +115,6 @@ hl.config({
                          or settings.bar.inside == "soft" and math.floor(settings.windows.rounding / 2)
                          or settings.windows.rounding,
         rounding_power = 2,
-
-        active_opacity   = 1.0,
-        inactive_opacity = 1.0,
 
         shadow = {
             enabled = false,

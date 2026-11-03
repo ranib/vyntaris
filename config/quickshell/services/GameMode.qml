@@ -30,8 +30,9 @@ Singleton {
             profileBefore = PowerProfiles.profile;
             Power.set(PowerProfile.Performance);
         }
+        // Blur and shadows are always off, so a game only loses the animations.
         Quickshell.execDetached(["hyprctl", "eval",
-            "hl.config({ decoration = { blur = { enabled = false }, shadow = { enabled = false } }, animations = { enabled = false } })"]);
+            "hl.config({ animations = { enabled = false } })"]);
         Activities.banner("gamepad", Tr.t("Game mode on"), Tr.t("Distractions off"), -1, Theme.accent, 2500);
     }
 

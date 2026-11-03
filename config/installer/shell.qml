@@ -414,7 +414,7 @@ ShellRoot {
         signal clicked()
         implicitHeight: sub ? 48 : 38
         radius: 12
-        color: selected ? Theme.alpha(Theme.text, 0.08) : pickArea.containsMouse && !dim ? Theme.hover : "transparent"
+        color: selected ? Theme.tint(parent, Theme.text, 0.08) : pickArea.containsMouse && !dim ? Theme.hoverOn(parent) : "transparent"
         border { width: 1; color: selected ? Theme.accent : "transparent" }
         opacity: dim ? 0.45 : 1
         Behavior on color { ColorAnim {} }
@@ -435,8 +435,8 @@ ShellRoot {
 
     component Box: Rectangle {
         radius: 14
-        color: Theme.alpha(Theme.crust, 0.35)
-        border { width: 1; color: Theme.glassRim }
+        color: Theme.tint(parent, Theme.crust, 0.35)
+        border { width: 1; color: Theme.rimOn(parent) }
         clip: true
     }
 
@@ -489,7 +489,7 @@ ShellRoot {
                 z: 5
                 anchors.fill: surface
                 radius: 24
-                color: Theme.alpha(Theme.crust, 0.94)
+                color: Theme.tint(parent, Theme.crust, 0.94)
                 opacity: textMode.running ? 1 : 0
                 visible: opacity > 0
                 Behavior on opacity { Anim { duration: Theme.durationNormal } }
@@ -540,7 +540,7 @@ ShellRoot {
                                     width: index === root.page ? 30 : 16
                                     height: 8
                                     radius: 3
-                                    color: index <= root.page ? Theme.accent : Theme.alpha(Theme.text, 0.12)
+                                    color: index <= root.page ? Theme.accent : Theme.tint(parent, Theme.text, 0.12)
                                     Behavior on width { Anim { duration: Theme.durationNormal; easing.bezierCurve: Theme.curveSpring } }
                                     Behavior on color { ColorAnim {} }
                                 }
@@ -580,7 +580,7 @@ ShellRoot {
                                     spacing: Theme.space12
                                     Rectangle {
                                         implicitWidth: 40; implicitHeight: 40; radius: 20
-                                        color: root.online ? Theme.accent : Theme.alpha(Theme.text, 0.06)
+                                        color: root.online ? Theme.accent : Theme.tint(parent, Theme.text, 0.06)
                                         Icon { anchors.centerIn: parent; name: root.online ? "wifi" : "wifi-off"; size: 18; color: root.online ? Theme.textOnAccent : Theme.overlay1 }
                                     }
                                     ColumnLayout {
@@ -611,7 +611,7 @@ ShellRoot {
                                             width: ListView.view.width
                                             height: 52
                                             radius: 12
-                                            color: modelData.active ? Theme.accent : netArea.containsMouse ? Theme.hover : "transparent"
+                                            color: modelData.active ? Theme.accent : netArea.containsMouse ? Theme.hoverOn(parent) : "transparent"
                                             Behavior on color { ColorAnim {} }
                                             RowLayout {
                                                 anchors { fill: parent; leftMargin: Theme.space14; rightMargin: Theme.space14 }
@@ -1137,8 +1137,8 @@ ShellRoot {
                                             radius: 4
                                             color: root.result > 0 && lit > 0 ? Theme.error
                                                  : lit >= 1 ? Theme.accent
-                                                 : lit > 0 ? Theme.alpha(Theme.accent, 0.35 + 0.5 * segs.pulse)
-                                                 : Theme.alpha(Theme.text, 0.08)
+                                                 : lit > 0 ? Theme.tint(parent, Theme.accent, 0.35 + 0.5 * segs.pulse)
+                                                 : Theme.tint(parent, Theme.text, 0.08)
                                             scale: lit > 0 && lit < 1 ? 1 + 0.12 * segs.pulse : 1
                                             Behavior on color { ColorAnim {} }
                                         }
@@ -1197,7 +1197,7 @@ ShellRoot {
                                         height: Math.max(28, logView.visibleArea.heightRatio * (parent.height - 20))
                                         radius: 2
                                         visible: logView.visibleArea.heightRatio < 1
-                                        color: Theme.alpha(Theme.accent, barDrag.pressed || logView.moving ? 0.85 : 0.45)
+                                        color: Theme.tint(parent, Theme.accent, barDrag.pressed || logView.moving ? 0.85 : 0.45)
                                         Behavior on color { ColorAnim {} }
                                         MouseArea {
                                             id: barDrag

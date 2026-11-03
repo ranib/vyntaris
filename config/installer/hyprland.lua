@@ -18,7 +18,7 @@ hl.config({
     animations = { enabled = false },
     general = {
         border_size = 2,
-        col = { active_border = "rgba(cba6f7ff)", inactive_border = "rgba(313244cc)" },
+        col = { active_border = "rgba(cba6f7ff)", inactive_border = "rgba(2d2e40ff)" },
     },
     decoration = { rounding = 14 },
 })

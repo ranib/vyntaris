@@ -89,7 +89,7 @@ if command -v thunar >/dev/null; then
         echo '(gtk_accel_path "<Actions>/ThunarActions/uca-action-shell-quick-look" "space")' >> "$accels"
     fi
     thunar_pref last-menubar-visible bool false
-    thunar_pref last-side-pane string void
+    thunar_pref last-side-pane string THUNAR_SIDEPANE_TYPE_SHORTCUTS
     thunar_pref last-icon-view-zoom-level string THUNAR_ZOOM_LEVEL_150_PERCENT
     if ! xfconf-query -c thunar -p /hidden-bookmarks >/dev/null 2>&1 && ! grep -q 'name="hidden-bookmarks"' "$thunar_xml" 2>/dev/null; then
         desktop="$(xdg-user-dir DESKTOP)"

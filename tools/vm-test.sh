@@ -94,7 +94,8 @@ if [ "$STAGE" = all ]; then
     rm -rf "$OUT/current" "$OUT/current.tar.gz" && mkdir -p "$OUT/current"
     if [ -z "${ISO_ONLY:-}" ]; then
         "$REPO/tools/package.sh" >/dev/null
-        cp "$(ls -t "$REPO"/pkg/vyntaris-*.pkg.tar.zst | head -n1)" "$REPO/iso/airootfs/usr/local/bin/install-desktop" \
+        cp "$(ls -t "$REPO"/pkg/vyntaris-*.pkg.tar.zst | head -n1)" "$(ls -t "$REPO"/pkg/yay-bin-*.pkg.tar.zst | head -n1)" \
+            "$REPO/iso/airootfs/usr/local/bin/install-desktop" \
             "$REPO/packages.txt" "$REPO/iso/base-packages" "$OUT/current/"
         tar -C "$OUT/current" -czf "$OUT/current.tar.gz" .
     fi
@@ -105,8 +106,8 @@ if [ "$STAGE" = all ]; then
 exec > >(tee /dev/ttyS0) 2>&1
 if curl -fsSo /tmp/current.tar.gz http://10.0.2.2:8123/current.tar.gz; then
     mkdir -p /tmp/current && tar -C /tmp/current -xzf /tmp/current.tar.gz
-    rm -f /opt/vyntaris-repo/*.pkg.tar.* && cp /tmp/current/vyntaris-*.pkg.tar.zst /opt/vyntaris-repo/
-    repo-add -q -R /opt/vyntaris-repo/vyntaris.db.tar.gz /opt/vyntaris-repo/vyntaris-*.pkg.tar.zst
+    rm -f /opt/vyntaris-repo/*.pkg.tar.* && cp /tmp/current/*.pkg.tar.zst /opt/vyntaris-repo/
+    repo-add -q -R /opt/vyntaris-repo/vyntaris.db.tar.gz /opt/vyntaris-repo/*.pkg.tar.zst
     install -m755 /tmp/current/install-desktop /usr/local/bin/install-desktop
     install -m644 /tmp/current/packages.txt /tmp/current/base-packages /usr/share/desktop-installer/
     echo "using the package and installer from the host's tree"

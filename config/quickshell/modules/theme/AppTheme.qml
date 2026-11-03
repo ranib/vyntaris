@@ -231,6 +231,10 @@ Scope {
             + `entry.search, .search-bar entry, searchbar entry { border-radius: 9999px; min-height: 36px; padding-left: 5px; background-color: ${hex(t.mantle)}; box-shadow: inset 0 0 0 1px ${hex(t.surface1)}; }\n`
             + `entry.search:focus-within, entry.search:focus, searchbar entry:focus-within { box-shadow: inset 0 0 0 2px @accent_color; outline: none; }\n`
             + `entry.search > image:first-child, entry.search image.left, searchbar entry > image:first-child { background-color: @accent_bg_color; color: @accent_fg_color; border-radius: 9999px; min-width: 26px; min-height: 26px; padding: 0; margin: 5px 8px 5px 0; opacity: 1; }\n`
+            // libadwaita tints destructive buttons see-through; they're solid like the suggested ones.
+            + `button.destructive-action { background-color: @destructive_bg_color; color: @destructive_fg_color; }\n`
+            + `button.destructive-action:hover { background-color: shade(@destructive_bg_color, 1.08); }\n`
+            + `button.destructive-action:active, button.destructive-action:checked { background-color: shade(@destructive_bg_color, 0.92); }\n`
             + `.titlebutton, windowcontrols { min-width: 0; min-height: 0; padding: 0; margin: 0; opacity: 0; }\n`
             + `window.csd > .titlebar:not(headerbar) { min-height: 0; padding: 0; margin: 0; border: none; background: none; box-shadow: none; }\n`
             + `window.csd > .titlebar:not(headerbar) * { min-height: 0; padding: 0; margin: 0; font-size: 0; }\n`

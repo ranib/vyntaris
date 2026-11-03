@@ -100,7 +100,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: vyntaris-package
-          path: pkg/vyntaris-*.pkg.tar.zst
+          path: |
+            pkg/vyntaris-*.pkg.tar.zst
+            pkg/yay-bin-*.pkg.tar.zst
           retention-days: 3
 
   smoke:
@@ -117,7 +119,7 @@ jobs:
         run: |
           pacman -Syu --noconfirm sway grim python
           pacman-key --init
-          pacman -U --noconfirm /tmp/package/vyntaris-*.pkg.tar.zst
+          pacman -U --noconfirm /tmp/package/vyntaris-*.pkg.tar.zst /tmp/package/yay-bin-*.pkg.tar.zst
           setcap -r /usr/bin/sway || true
       - name: The launcher understands plain words and money (Qt's qml, no screen)
         run: tools/test-search.sh
@@ -212,7 +214,7 @@ jobs:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
         run: |
           printf '%s\n' "$SIGNING_KEY" | gpg --batch --quiet --import
-          tools/publish-repo.sh pkg/vyntaris-*.pkg.tar.zst
+          tools/publish-repo.sh pkg/vyntaris-*.pkg.tar.zst pkg/yay-bin-*.pkg.tar.zst
 
   iso:
     needs: smoke

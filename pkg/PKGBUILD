@@ -19,6 +19,7 @@ depends=(
     poppler ffmpegthumbnailer qt6-multimedia qt6-multimedia-ffmpeg ripgrep
     wtype openssl
     gtk4 libadwaita libheif btop
+    yay  # the AUR helper (yay-bin, from Vyntaris's repository), always there, whether the AUR is on or not
     arch-wiki-docs  # the Arch Wiki without internet (SUPER+SHIFT+H, or ? in the launcher), there from the start
 )
 optdepends=(

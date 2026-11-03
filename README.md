@@ -479,7 +479,8 @@ and removed with a click through pacman and the shell's password dialog.
 
 **The AUR is off until it's turned on** (Settings → Apps → Apps from the AUR, `apps.aur`, or the Store's
 "Search the AUR too…", which says what the AUR is first): anyone can upload a recipe there and Arch checks
-none of them. Turned on, and with yay (which the setup installs), a search also asks the AUR. Each result
+none of them. Turned on, a search also asks the AUR, with yay: it comes with Vyntaris (built from the AUR's
+`yay-bin` beside the package and in its repository), and the Store gets it itself where it's missing. Each result
 says on its row how many votes it has and when its recipe last changed, and is marked as a community
 recipe. Before one is built, a warning shows who keeps it (or that no one does), its votes, when it was
 first uploaded and last changed, and cautions: no maintainer, a recipe changed in the last week, few votes,

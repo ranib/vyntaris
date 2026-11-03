@@ -25,7 +25,11 @@ grep -q ' kms ' "$profile/airootfs/etc/mkinitcpio.conf.d/archiso.conf" && { echo
 repo="$profile/airootfs/opt/vyntaris-repo"
 mkdir -p "$repo"
 cp "$pkgfile" "$repo/"
-repo-add -q "$repo/vyntaris.db.tar.gz" "$repo/$(basename "$pkgfile")"
+# yay comes with Vyntaris (it's a dependency), built beside it by tools/package.sh, so it's in the ISO's repository too.
+for extra in "$(dirname "$pkgfile")"/yay-bin-[0-9]*.pkg.tar.zst; do
+    [ -e "$extra" ] && cp "$extra" "$repo/"
+done
+repo-add -q "$repo/vyntaris.db.tar.gz" "$repo"/*.pkg.tar.zst
 
 for p in efibootmgr git hyprland quickshell kitty inter-font ttf-jetbrains-mono noto-fonts networkmanager; do
     grep -qx "$p" "$profile/packages.x86_64" || echo "$p" >> "$profile/packages.x86_64"

@@ -121,10 +121,11 @@ Scope {
         id: win
         visible: Panels.settingsOpen
         title: Tr.t("Settings")
-        implicitWidth: 866
+        // Wide for the cards, and as tall as the whole sidebar.
+        implicitWidth: Math.min(1060, (screen?.width ?? 1920) * 0.8)
         readonly property real sideNeeded: side.needed
         implicitHeight: Math.min(sideNeeded, (screen?.height ?? 1080) * 0.9)
-        minimumSize: Qt.size(700, 480)
+        minimumSize: Qt.size(760, 480)
         color: Theme.base
 
         onVisibleChanged: if (!visible) Panels.settingsOpen = false
@@ -169,9 +170,9 @@ Scope {
 
                 ColumnLayout {
                     id: resultColumn
-                    x: 30
-                    y: 24
-                    width: Math.min(parent.width - 60, 720)
+                    x: Math.max(30, (parent.width - width) / 2)
+                    y: 28
+                    width: Math.min(parent.width - 60, 680)
                     spacing: Theme.space6
 
                     Label { font.pixelSize: Theme.fontSizeHeading; font.weight: Font.Bold; text: Tr.t("Search") }
@@ -215,9 +216,9 @@ Scope {
 
                 ColumnLayout {
                     id: pageColumn
-                    x: 30
-                    y: 24
-                    width: Math.min(parent.width - 60, 720)
+                    x: Math.max(30, (parent.width - width) / 2)
+                    y: 28
+                    width: Math.min(parent.width - 60, 680)
                     spacing: Theme.space12
 
                     Label {

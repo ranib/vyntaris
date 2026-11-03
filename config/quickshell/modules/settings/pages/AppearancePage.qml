@@ -9,6 +9,7 @@ import "../../../config/Palettes.js" as Palettes
 SettingsPage {
     pageId: "appearance"
 
+    SettingsSection { text: Tr.t("Style") }
     SettingsRow {
         title: Tr.t("Theme")
         Choice {
@@ -65,6 +66,11 @@ SettingsPage {
         }
     }
     SettingsRow {
+        title: Tr.t("Match apps to theme")
+        Switch { checked: Config.theme.syncApps; onToggled: on => { Config.theme.syncApps = on; Config.saveSoon(); } }
+    }
+    SettingsSection { text: Tr.t("Text") }
+    SettingsRow {
         title: Tr.t("Text size")
         Choice {
             options: [{ value: 12, label: Tr.t("Small") }, { value: 13, label: Tr.t("Normal") }, { value: 15, label: Tr.t("Large") }, { value: 17, label: Tr.t("Larger") }]
@@ -72,6 +78,15 @@ SettingsPage {
             onPicked: v => { Config.theme.fontSize = v; Config.saveSoon(); }
         }
     }
+    SettingsRow {
+        title: Tr.t("Font")
+        Field { implicitWidth: 220; text: Config.theme.fontFamily; placeholder: "Inter"; onCommitted: t => { Config.theme.fontFamily = t.trim(); Config.saveSoon(); } }
+    }
+    SettingsRow {
+        title: Tr.t("Monospace font")
+        Field { implicitWidth: 220; mono: true; text: Config.theme.monoFamily; placeholder: "JetBrains Mono"; onCommitted: t => { Config.theme.monoFamily = t.trim(); Config.saveSoon(); } }
+    }
+    SettingsSection { text: Tr.t("Motion") }
     SettingsRow {
         title: Tr.t("Animations")
         Choice {
@@ -104,6 +119,7 @@ SettingsPage {
             onPicked: v => { Config.theme.workspaceAnimation = v; Config.saveSoon(); }
         }
     }
+    SettingsSection { text: Tr.t("Sound") }
     SettingsRow {
         title: Tr.t("Login sound")
         Choice {
@@ -114,17 +130,5 @@ SettingsPage {
                 if (v !== "off") Quickshell.execDetached(["pw-play", Config.loginSoundPath(v)]);
             }
         }
-    }
-    SettingsRow {
-        title: Tr.t("Match apps to theme")
-        Switch { checked: Config.theme.syncApps; onToggled: on => { Config.theme.syncApps = on; Config.saveSoon(); } }
-    }
-    SettingsRow {
-        title: Tr.t("Font")
-        Field { implicitWidth: 220; text: Config.theme.fontFamily; placeholder: "Inter"; onCommitted: t => { Config.theme.fontFamily = t.trim(); Config.saveSoon(); } }
-    }
-    SettingsRow {
-        title: Tr.t("Monospace font")
-        Field { implicitWidth: 220; mono: true; text: Config.theme.monoFamily; placeholder: "JetBrains Mono"; onCommitted: t => { Config.theme.monoFamily = t.trim(); Config.saveSoon(); } }
     }
 }

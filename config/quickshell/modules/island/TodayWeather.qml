@@ -21,6 +21,8 @@ ColumnLayout {
         t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
         return Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7);
     }
+    // As big as it was before the icons were Material's, whose shapes leave room around them in their box.
+    readonly property int iconSize: Math.round(Theme.fontSize * 2)
     readonly property var w: Weather.known ? Weather.describe(Weather.now.code, Weather.now.day) : null
 
     Label {
@@ -72,7 +74,7 @@ ColumnLayout {
     RowLayout {
         visible: root.unavailable
         spacing: Theme.space8
-        Icon { name: "cloud-off"; size: Theme.fontSizeHeading; stroke: 1.6; color: Theme.accentInk }
+        Icon { name: "cloud-off"; size: root.iconSize; stroke: 1.6; color: Theme.accentInk }
         Label { font.pixelSize: Theme.fontSizeTitle; font.weight: Font.Light; mono: true; text: "--°" }
     }
     Label {
@@ -95,7 +97,7 @@ ColumnLayout {
     RowLayout {
         visible: root.w !== null
         spacing: Theme.space8
-        Icon { name: root.w?.icon ?? "sun"; size: Theme.fontSizeHeading; stroke: 1.6; color: Theme.accentInk }
+        Icon { name: root.w?.icon ?? "sun"; size: root.iconSize; stroke: 1.6; color: Theme.accentInk }
         Label { font.pixelSize: Theme.fontSizeTitle; font.weight: Font.Light; mono: true; text: (Weather.now?.temp ?? "") + "°" }
     }
     Label {

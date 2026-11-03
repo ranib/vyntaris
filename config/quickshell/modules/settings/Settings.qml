@@ -145,6 +145,16 @@ Scope {
                 title: Tr.t("Settings")
                 subtitle: Distro.name
                 searchHint: Tr.t("Search settings")
+                search.count: root.query.trim() !== "" ? root.results.length : -1
+                searching: root.query.trim() !== ""
+                noResults: Tr.f("No settings match \u201c{0}\u201d", root.query.trim())
+                results: root.results.map(r => {
+                    const page = root.pages.find(p => p.id === r.page);
+                    const title = Tr.t(r.title), where = Tr.t(page?.label ?? "");
+                    // A page found by its own name needs no "in" line.
+                    return { icon: page?.icon ?? "settings", title: title, subtitle: where === title ? "" : where, result: r };
+                })
+                onResultPicked: hit => root.openResult(hit.result)
                 pages: root.pages
                 current: Panels.settingsPage
                 onPicked: id => Panels.settingsPage = id
@@ -160,54 +170,7 @@ Scope {
             }
 
             Flickable {
-                id: resultsView
-                visible: root.query.trim() !== ""
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                contentHeight: resultColumn.implicitHeight + 48
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-
-                ColumnLayout {
-                    id: resultColumn
-                    x: Math.max(30, (parent.width - width) / 2)
-                    y: 28
-                    width: Math.min(parent.width - 60, 680)
-                    spacing: Theme.space6
-
-                    Label { font.pixelSize: Theme.fontSizeHeading; font.weight: Font.Bold; text: Tr.t("Search") }
-                    Label {
-                        visible: root.results.length === 0
-                        Layout.topMargin: Theme.space10
-                        color: Theme.overlay1
-                        text: Tr.f("No settings match \u201c{0}\u201d", root.query.trim())
-                    }
-                    Repeater {
-                        model: root.results
-                        Rectangle {
-                            required property var modelData
-                            Layout.fillWidth: true
-                            implicitHeight: resRow.implicitHeight + 20
-                            radius: Theme.r(12)
-                            color: resArea.containsMouse ? Theme.hover : Theme.alpha(Theme.text, 0.04)
-                            border { width: 1; color: resArea.containsMouse ? Theme.accent : Theme.glassRim }
-                            RowLayout {
-                                id: resRow
-                                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: Theme.space14; rightMargin: Theme.space14 }
-                                spacing: Theme.space12
-                                Icon { name: root.pages.find(p => p.id === modelData.page)?.icon ?? "settings"; size: 15; color: Theme.accentInk }
-                                Label { Layout.fillWidth: true; elide: Text.ElideRight; font.weight: Font.DemiBold; text: Tr.t(modelData.title) }
-                                Label { overline: true; color: Theme.overlay1; text: Tr.t(root.pages.find(p => p.id === modelData.page)?.label ?? "") }
-                            }
-                            PressArea { label: Tr.t(modelData.title); id: resArea; anchors.fill: parent; onClicked: root.openResult(modelData) }
-                        }
-                    }
-                }
-            }
-
-            Flickable {
                 id: flick
-                visible: !resultsView.visible
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 contentHeight: pageColumn.implicitHeight + 48

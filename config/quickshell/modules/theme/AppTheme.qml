@@ -227,6 +227,10 @@ Scope {
             + `@define-color headerbar_shade_color ${shade};\n`
             + `@define-color shade_color ${shade};\n`
             + `.view:selected, iconview:selected, treeview.view:selected, row:selected, .sidebar row:selected, placessidebar row:selected { background-color: @accent_bg_color; color: @accent_fg_color; }\n`
+            // Search fields look like the shell's: a pill with the magnifier in an accent circle.
+            + `entry.search, .search-bar entry, searchbar entry { border-radius: 9999px; min-height: 32px; padding-left: 5px; background-color: ${hex(t.mantle)}; box-shadow: inset 0 0 0 1px ${hex(t.surface1)}; }\n`
+            + `entry.search:focus-within, entry.search:focus, searchbar entry:focus-within { box-shadow: inset 0 0 0 2px @accent_color; outline: none; }\n`
+            + `entry.search > image:first-child, entry.search image.left, searchbar entry > image:first-child { background-color: @accent_bg_color; color: @accent_fg_color; border-radius: 9999px; min-width: 22px; min-height: 22px; padding: 0; margin: 5px 8px 5px 0; opacity: 1; }\n`
             + `.titlebutton, windowcontrols { min-width: 0; min-height: 0; padding: 0; margin: 0; opacity: 0; }\n`
             + `window.csd > .titlebar:not(headerbar) { min-height: 0; padding: 0; margin: 0; border: none; background: none; box-shadow: none; }\n`
             + `window.csd > .titlebar:not(headerbar) * { min-height: 0; padding: 0; margin: 0; font-size: 0; }\n`

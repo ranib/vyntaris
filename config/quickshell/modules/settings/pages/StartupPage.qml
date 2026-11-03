@@ -56,7 +56,7 @@ SettingsPage {
         }
     }
     SettingsSection { text: Tr.t("Add") }
-    Field { id: startSearch; Layout.fillWidth: true; placeholder: Tr.t("Search") }
+    SearchField { id: startSearch; Layout.fillWidth: true; placeholder: Tr.t("Search") }
     Flow {
         Layout.fillWidth: true
         spacing: Theme.space6

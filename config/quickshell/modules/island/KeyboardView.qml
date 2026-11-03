@@ -15,6 +15,7 @@ Item {
 
     readonly property var entries: Keyboard.entries
     property bool adding: false
+    readonly property Item search: searchBox.input
     readonly property var hits: Keyboard.search(search.text, 6)
 
     Component.onCompleted: if (active) activeChanged()
@@ -118,37 +119,13 @@ Item {
             visible: root.adding
             spacing: Theme.space8
 
-            PanelSurface {
+            SearchField {
+                id: searchBox
                 Layout.fillWidth: true
-                implicitHeight: 34
-                radius: Theme.r(10)
-                fill: Theme.alpha(Theme.crust, 0.45)
-                edgeWidth: 1; edge: search.activeFocus ? Theme.accent : Theme.glassRim
-                Behavior on edge { ColorAnim {} }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.IBeamCursor; onClicked: search.forceActiveFocus() }
-                RowLayout {
-                    anchors { fill: parent; leftMargin: Theme.space12; rightMargin: Theme.space12 }
-                    spacing: Theme.space8
-                    Icon { name: "search"; size: 13; color: search.activeFocus ? Theme.accentInk : Theme.overlay1 }
-                    TextInput {
-                        id: search
-                        Layout.fillWidth: true
-                        color: Theme.text
-                        selectionColor: Theme.accent
-                        selectedTextColor: Theme.textOnAccent
-                        font { family: Theme.fontFamily; pixelSize: Theme.fontSize }
-                        clip: true
-                        Keys.onEscapePressed: root.adding = false
-                        Keys.onReturnPressed: root.addHit(root.hits[0])
-                        Keys.onEnterPressed: root.addHit(root.hits[0])
-                        Label {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: !search.text
-                            color: Theme.overlay0
-                            text: Tr.t("Language")
-                        }
-                    }
-                }
+                placeholder: Tr.t("Language")
+                Keys.onEscapePressed: root.adding = false
+                Keys.onReturnPressed: root.addHit(root.hits[0])
+                Keys.onEnterPressed: root.addHit(root.hits[0])
             }
 
             GridLayout {

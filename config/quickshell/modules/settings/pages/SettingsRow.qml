@@ -42,7 +42,8 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Theme.alpha(Theme.text, Theme.isDark ? 0.045 : 0.035)
+        // Solid, like GTK's cards (card_bg_color in AppTheme).
+        color: Theme.isDark ? Theme.surface0 : Theme.mantle
         topLeftRadius: r.first ? Theme.r(12) : 0
         topRightRadius: r.first ? Theme.r(12) : 0
         bottomLeftRadius: r.last ? Theme.r(12) : 0
@@ -53,7 +54,7 @@ Item {
         visible: !r.first
         anchors { top: parent.top; left: parent.left; right: parent.right; leftMargin: Theme.space16; rightMargin: Theme.space16 }
         height: 1
-        color: Theme.alpha(Theme.text, 0.07)
+        color: Theme.base
     }
 
     RowLayout {

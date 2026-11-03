@@ -58,9 +58,12 @@ if [ ! -e "$f" ]; then
 elif ! grep -q '"password-store"' "$f"; then
     sed -i '0,/^{/s//{\n\t"password-store": "gnome-libsecret",/' "$f"
 fi
+done_stamp="$version"
 if command -v code >/dev/null; then
     for ext in Catppuccin.catppuccin-vsc Catppuccin.catppuccin-vsc-icons; do
-        code --list-extensions 2>/dev/null | grep -qix "$ext" || timeout 120 code --install-extension "$ext" >/dev/null 2>&1 || true
+        # The installer runs this in a chroot, often without a network: then the next login tries again.
+        code --list-extensions 2>/dev/null | grep -qix "$ext" || timeout 120 code --install-extension "$ext" >/dev/null 2>&1 ||
+            done_stamp="$version, without $ext yet"
     done
 fi
 
@@ -110,5 +113,5 @@ for dir in "${folders[@]}"; do
 done
 
 mkdir -p "$(dirname "$stamp")"
-echo "$version" > "$stamp"
+echo "$done_stamp" > "$stamp"
 say "Your part of Vyntaris $version is set up"

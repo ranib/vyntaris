@@ -84,6 +84,9 @@ ShellRoot {
         command: ["test", "-f", "/opt/vyntaris-offline/offline.db.tar.gz"]
         onExited: code => root.offlineReady = code === 0
     }
+    // Which Vyntaris this ISO installs, written next to the installer by iso/build.sh.
+    readonly property string isoVersion: versionFile.text().trim()
+    FileView { id: versionFile; path: Quickshell.shellPath("version"); blockLoading: true }
     property bool hasWifi: false
     property var networks: []
     property string connecting: ""
@@ -526,7 +529,7 @@ ShellRoot {
                         Icon { name: "vyntaris"; size: 22; color: Theme.accentInk }
                         ColumnLayout {
                             spacing: Theme.space2
-                            Caption { text: root.preview ? Tr.t("Preview: nothing will be erased") : "Vyntaris" }
+                            Caption { text: (root.preview ? Tr.t("Preview: nothing will be erased") + " · " : "") + "Vyntaris" + (root.isoVersion ? " " + root.isoVersion : "") }
                             Label { text: root.page === 8 ? Tr.t("Repair") : Tr.t(root.pages[root.page]); font.pixelSize: Theme.fontSizeHeading; font.weight: Font.Bold }
                         }
                         Item { Layout.fillWidth: true }

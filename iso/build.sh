@@ -73,6 +73,8 @@ printf '\n[vyntaris]\nSigLevel = Optional TrustAll\nServer = file:///opt/vyntari
 
 version="$(bsdtar -xOf "$pkgfile" .PKGINFO | sed -n 's/^pkgver = \(.*\)-[^-]*$/\1/p')"
 [ -n "$version" ] || version="$(cat "$REPO/VERSION")"
+# The installer says which Vyntaris it puts on, at the top.
+echo "$version" > "$inst/version"
 sed -i \
     -e 's/^iso_name=.*/iso_name="vyntaris"/' \
     -e "s/^iso_version=.*/iso_version=\"$version\"/" \

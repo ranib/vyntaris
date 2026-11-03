@@ -968,8 +968,8 @@ releasing it (`tools/vm-test.sh`): installs it in a VM, boots the installed syst
 screen, breaks an update for real and watches it undo itself; the installed system reports over the serial
 port (`tools/vm-check.sh`) whether its services, signing, login screen, Hyprland and shell came up without
 errors. A manual run puts the ISO on `dl.vyntarisos.com` only with "publish" too, and only once every test passes,
-so an ISO can be tested from any branch without going out. The bucket keeps the three newest versioned ISOs
-and `vyntaris-x86_64.iso`, the newest under a name that doesn't change. Patch versions go out only as packages:
+so an ISO can be tested from any branch without going out. The bucket keeps only `vyntaris-x86_64.iso`, the newest
+under a name that doesn't change (the installer shows its version at the top); every versioned ISO is deleted. Patch versions go out only as packages:
 installed systems update themselves.
 
 CI tags each push to main with `GITHUB_TOKEN`, which GitHub won't let tag a commit that changes a workflow, so

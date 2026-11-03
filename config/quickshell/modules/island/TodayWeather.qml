@@ -67,11 +67,30 @@ ColumnLayout {
         Spinner { size: 14 }
         Caption { Layout.fillWidth: true; wrapMode: Text.Wrap; text: Tr.t("Getting the weather…") }
     }
-    Caption {
-        visible: Weather.enabled && Weather.failed && root.w === null
+    // Laid out like the weather itself, so the corner keeps its shape when there's none.
+    readonly property bool unavailable: Weather.enabled && Weather.failed && root.w === null
+    RowLayout {
+        visible: root.unavailable
+        spacing: Theme.space8
+        Icon { name: "cloud-off"; size: Theme.fontSizeHeading; stroke: 1.6; color: Theme.accentInk }
+        Label { font.pixelSize: Theme.fontSizeTitle; font.weight: Font.Light; mono: true; text: "--°" }
+    }
+    Label {
+        visible: root.unavailable
         Layout.fillWidth: true
         wrapMode: Text.Wrap
+        font.weight: Font.DemiBold
+        font.pixelSize: Theme.fontSizeLabel
         text: Tr.t("Weather isn't available")
+    }
+    // Offline there's no looked-up city yet, so it's the one it asked for (the one typed in, or the time zone's).
+    readonly property string tried: Weather.city || Weather.place
+    Caption {
+        visible: root.unavailable && root.tried !== ""
+        Layout.fillWidth: true
+        elide: Text.ElideRight
+        text: root.tried
+        PressArea { label: root.tried; anchors.fill: parent; onClicked: { Panels.controlOpen = false; Panels.settingsRow("time", "Weather for"); } }
     }
     RowLayout {
         visible: root.w !== null

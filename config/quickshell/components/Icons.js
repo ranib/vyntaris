@@ -12,6 +12,7 @@ var material = {
     "sun": "light_mode",
     "moon": "dark_mode",
     "cloud": "cloud",
+    "cloud-off": "cloud_off",
     "partly-cloudy": "partly_cloudy_day",
     "partly-cloudy-night": "partly_cloudy_night",
     "rain": "rainy",

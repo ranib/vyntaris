@@ -671,7 +671,7 @@ fn build(app: &adw::Application) -> adw::ApplicationWindow {
         monitor: RefCell::default(),
         title: adw::WindowTitle::new(&tr("Store"), &tr("Arch")),
         sections: gtk::ListBox::builder().css_classes(["navigation-sidebar"]).build(),
-        search: gtk::SearchEntry::builder().placeholder_text(tr("Search apps")).margin_start(12).margin_end(12).build(),
+        search: gtk::SearchEntry::builder().placeholder_text(tr("Search apps")).build(),
         heading: gtk::Label::builder().xalign(0.0).hexpand(true).css_classes(["title-2"]).build(),
         count: gtk::Label::builder().css_classes(["dim-label"]).build(),
         message: gtk::Label::builder().wrap(true).xalign(0.0).visible(false).css_classes(["card", "vyntaris-note"]).build(),

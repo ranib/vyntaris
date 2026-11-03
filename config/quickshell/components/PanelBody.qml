@@ -48,18 +48,24 @@ ColumnLayout {
         if (kept.some(k => k.item === item)) return;
         kept.push({ item: item, left: item.Layout.leftMargin, right: item.Layout.rightMargin });
     }
-    function place(column) {
+    // `at` is where the column will be once its own margins apply ({ x, y, width } in the island): margins set on a
+    // nested column only move it at the next polish, and its rows placed from where it was would follow another
+    // part of the edge (the Sound panel's inputs took its outputs').
+    function place(column, at) {
         const view = island, W = view.width, inset = Theme.panelInset;
-        const c = column.mapToItem(view, 0, 0);
+        const m = column.mapToItem(view, 0, 0);
+        const c = at ?? { x: m.x, y: m.y, width: column.width };
         for (let i = 0; i < column.children.length; i++) {
             const it = column.children[i];
             if (!it.visible || !it.Layout || it.height <= 0) continue;
             const y = c.y + it.y, nested = isColumn(it), list = isList(it);
             const o = out(nested || list ? y : y + it.height);
             keep(it);
-            it.Layout.leftMargin = Math.round((inset - o) - c.x);
-            it.Layout.rightMargin = Math.round((c.x + column.width) - (W - inset + o));
-            if (nested) place(it);
+            const left = Math.round((inset - o) - c.x), right = Math.round((c.x + c.width) - (W - inset + o));
+            it.Layout.leftMargin = left;
+            it.Layout.rightMargin = right;
+            // Filling the width, a nested column will sit exactly between its margins; otherwise it's measured.
+            if (nested) place(it, it.Layout.fillWidth ? { x: c.x + left, y: y, width: c.width - left - right } : undefined);
             else blocks.push(it);
         }
     }

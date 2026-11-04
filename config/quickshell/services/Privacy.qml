@@ -14,8 +14,14 @@ Singleton {
     PwObjectTracker { objects: root.enabled ? root.streams : [] }
 
     function prop(n, key) { return n?.properties?.[key] ?? ""; }
+    // Who it is, by the program behind the stream: what a stream calls itself is often its library's name (Discord's
+    // microphone is "WEBRTC VoiceEngine", Chromium's "Chromium input"), so the app's own name comes first.
     function appName(n) {
-        return prop(n, "application.name") || prop(n, "node.description") || prop(n, "node.name") || n?.description || "";
+        const bin = prop(n, "application.process.binary");
+        const entry = bin ? DesktopEntries.heuristicLookup(bin) : null;
+        if (entry?.name) return entry.name;
+        const own = prop(n, "application.name") || prop(n, "node.description") || prop(n, "node.name") || n?.description || "";
+        return bin && (!own || /voiceengine|^chromium|^alsa plug-in|^pipewire|^libcanberra/i.test(own)) ? bin.charAt(0).toUpperCase() + bin.slice(1) : own;
     }
 
     readonly property var micUsers: {

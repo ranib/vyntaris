@@ -92,8 +92,9 @@ Singleton {
     // fill is drawn elsewhere, like slanted ones) or its colour as a Rectangle; else its window's colour; else the glass.
     function groundOf(item) {
         for (let p = item; p; p = p.parent) {
-            // A Rectangle painted with a gradient keeps its default (white) colour, so it says nothing.
-            const g = p.ground !== undefined ? p.ground : p.radius !== undefined && p.visible && !p.gradient ? p.color : undefined;
+            // A Rectangle painted with a gradient keeps its default (white) colour, so it says what it is with `ground`
+            // (Surface does); reading `gradient` here would make every tint depend on a property that can't be bound.
+            const g = p.ground !== undefined ? p.ground : p.radius !== undefined && p.visible ? p.color : undefined;
             if (g !== undefined && g !== null && g.a === 1) return g;
         }
         const c = item?.Window?.window?.color;

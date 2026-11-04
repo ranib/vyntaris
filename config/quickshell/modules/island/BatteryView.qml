@@ -122,33 +122,6 @@ Item {
             }
         }
 
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent); visible: Battery.users.length > 0 }
-
-        Label { visible: Battery.users.length > 0; overline: true; color: Theme.overlay1; text: Tr.t("Using the most") }
-        Repeater {
-            model: Battery.users
-            RowLayout {
-                required property var modelData
-                Layout.fillWidth: true
-                spacing: Theme.space10
-                Icon { name: modelData.cpu < 0 ? "monitor" : "cpu"; size: 14; color: Theme.overlay1 }
-                Label { Layout.fillWidth: true; elide: Text.ElideRight; text: modelData.name }
-                Meter {
-                    visible: modelData.cpu >= 0
-                    implicitWidth: 90
-                    implicitHeight: 6
-                    value: Math.min(1, modelData.cpu / 50)
-                    fillColor: modelData.cpu >= 25 ? Theme.warning : Theme.accent
-                }
-                Label {
-                    mono: true
-                    font.pixelSize: Theme.fontSizeLabel
-                    color: modelData.cpu < 0 ? Theme.warning : Theme.subtext0
-                    text: modelData.cpu < 0 ? Tr.t("awake") : modelData.cpu + "%"
-                }
-            }
-        }
-
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineOn(parent) }
 
         RowLayout {

@@ -52,7 +52,6 @@ package() {
         "$srcdir/target/release/vyntaris-obex-agent" "$srcdir/target/release/vyntaris-bt-send"
     install -Dm755 "$srcdir/target/release/vyntaris-laptop-switches" "$d/usr/lib/vyntaris/laptop-switches"
     install -Dm755 "$srcdir/target/release/vyntaris-settings-admin" "$d/usr/lib/vyntaris/settings-admin"
-    install -Dm755 "$srcdir/target/release/vyntaris-power-users" "$d/usr/lib/vyntaris/power-users"
     install -Dm755 "$srcdir/target/release/vyntaris-icon-theme" "$d/usr/lib/vyntaris/icon-theme"
     install -Dm755 "$srcdir/target/release/vyntaris-store-index" "$d/usr/lib/vyntaris/store-index"
     install -Dm755 "$srcdir/target/release/vyntaris-doc-index" "$d/usr/lib/vyntaris/doc-index"

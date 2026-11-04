@@ -94,35 +94,6 @@ Singleton {
         onTriggered: reader.running = true
     }
 
-    property var users: []
-    readonly property var desktopNames: ({ quickshell: Tr.t("Vyntaris shell"), qs: Tr.t("Vyntaris shell"), Hyprland: Tr.t("Hyprland (the desktop)"),
-                                           cava: Tr.t("Music visualizer"), pipewire: Tr.t("Sound (PipeWire)"), wireplumber: Tr.t("Sound (PipeWire)"),
-                                           "pipewire-pulse": Tr.t("Sound (PipeWire)"), "awww-daemon": Tr.t("Wallpaper"),
-                                           "vyntaris-obex-agent": Tr.t("Bluetooth file sharing"), "vyntaris-shell": Tr.t("Vyntaris shell") })
-    Timer {
-        interval: Panels.batteryOpen ? 3000 : 60000
-        repeat: true
-        triggeredOnStart: true
-        running: root.available
-        onTriggered: if (!usersProc.running) usersProc.running = true
-    }
-    Connections {
-        target: Panels
-        function onBatteryOpenChanged() { if (Panels.batteryOpen && !usersProc.running) usersProc.running = true; }
-    }
-    Process {
-        id: usersProc
-        command: ["/usr/lib/vyntaris/power-users", "1"]
-        stdout: StdioCollector {
-            onStreamFinished: root.users = text.trim().split("\n").filter(l => l).map(l => {
-                const i = l.indexOf(" ");
-                const what = l.slice(0, i), name = l.slice(i + 1);
-                if (what === "gpu") return { name, cpu: -1 };
-                return { name: root.desktopNames[name] ?? DesktopEntries.byId(name)?.name ?? DesktopEntries.heuristicLookup(name)?.name ?? name, cpu: parseInt(what) };
-            })
-        }
-    }
-
     function refresh() {
         if (available) reader.running = true;
     }

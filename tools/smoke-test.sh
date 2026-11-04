@@ -73,7 +73,8 @@ g="$out/greeter"
 rm -rf "$g"; mkdir -p "$g/config" "$g/components"
 cp /usr/share/vyntaris/greeter/shell.qml "$g/"
 cp /usr/share/vyntaris/greeter/config/Config.qml /etc/xdg/quickshell/vyntaris/config/Theme.qml \
-    /etc/xdg/quickshell/vyntaris/config/Tr.qml /etc/xdg/quickshell/vyntaris/config/Palettes.js "$g/config/"
+    /etc/xdg/quickshell/vyntaris/config/Tr.qml /etc/xdg/quickshell/vyntaris/config/Palettes.js \
+    /etc/xdg/quickshell/vyntaris/config/Motion.js "$g/config/"
 cp /etc/xdg/quickshell/vyntaris/components/* "$g/components/"
 cp /usr/share/backgrounds/vyntaris/default.jpg "$g/wallpaper.jpg"
 printf '{"user":"%s","session":["vyntaris-session"],"wallpaper":"%s","flavor":"mocha","accent":"#655b94"}\n' \

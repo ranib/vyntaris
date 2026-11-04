@@ -121,7 +121,8 @@ greeter_files() {
     install -d "$GREETER/config" "$GREETER/components"
     install -m644 "$SHARE/greeter/shell.qml" "$GREETER/"
     install -m644 "$SHARE/greeter/config/Config.qml" /etc/xdg/quickshell/vyntaris/config/Theme.qml \
-        /etc/xdg/quickshell/vyntaris/config/Tr.qml /etc/xdg/quickshell/vyntaris/config/Palettes.js "$GREETER/config/"
+        /etc/xdg/quickshell/vyntaris/config/Tr.qml /etc/xdg/quickshell/vyntaris/config/Palettes.js \
+        /etc/xdg/quickshell/vyntaris/config/Motion.js "$GREETER/config/"
     install -m644 /etc/xdg/quickshell/vyntaris/components/* "$GREETER/components/"
     install -d "$GREETER/i18n" && install -m644 /etc/xdg/quickshell/vyntaris/i18n/*.json "$GREETER/i18n/" 2>/dev/null || true
     for f in "$keep"/*; do

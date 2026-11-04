@@ -87,9 +87,24 @@ Item {
             ScriptAction { script: root.dismissed() }
         }
 
+        // In the card's corner, not in the line of text it used to push along.
+        Rectangle {
+            z: 2
+            anchors { top: parent.top; right: parent.right; topMargin: Theme.space8; rightMargin: Theme.space8 }
+            width: 20
+            height: 20
+            radius: 10
+            opacity: hover.hovered || closeArea.activeFocus ? 1 : 0
+            Behavior on opacity { Anim { duration: Theme.durationFast } }
+            color: closeArea.containsMouse ? Theme.tint(parent, Theme.error, 0.2) : Theme.tint(parent, Theme.text, 0.07)
+            Icon { anchors.centerIn: parent; name: "close"; size: 10; stroke: 2.2; color: closeArea.containsMouse ? Theme.error : Theme.subtext0 }
+            PressArea { label: Tr.t("Dismiss"); id: closeArea; anchors.fill: parent; anchors.margins: -4; onClicked: away.start() }
+        }
+
         RowLayout {
             id: body
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.space12; leftMargin: Theme.space12; rightMargin: Theme.space12 }
+            // Room on the right for the dismiss button in the corner.
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.space12; leftMargin: Theme.space12; rightMargin: Theme.space12 + 22 }
             spacing: Theme.space12
 
             Rectangle {
@@ -139,16 +154,6 @@ Item {
                         radius: Theme.r(10)
                         color: Theme.accent
                         Label { id: moreText; anchors.centerIn: parent; mono: true; font.pixelSize: Theme.fontSizeSmall; color: Theme.textOnAccent; text: "+" + root.more }
-                    }
-                    Rectangle {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        radius: 10
-                        opacity: hover.hovered || closeArea.activeFocus ? 1 : 0
-                        Behavior on opacity { Anim { duration: Theme.durationFast } }
-                        color: closeArea.containsMouse ? Theme.tint(parent, Theme.error, 0.2) : Theme.tint(parent, Theme.text, 0.07)
-                        Icon { anchors.centerIn: parent; name: "close"; size: 10; stroke: 2.2; color: closeArea.containsMouse ? Theme.error : Theme.subtext0 }
-                        PressArea { label: Tr.t("Dismiss"); id: closeArea; anchors.fill: parent; anchors.margins: -4; onClicked: away.start() }
                     }
                 }
                 Label {

@@ -132,7 +132,12 @@ ColumnLayout {
                     ago: root.ago(entry.time)
                     stacked: group.many && !group.open ? Math.min(2, group.items.length - 1) : 0
                     more: group.many && !group.open ? group.items.length - 1 : 0
-                    onClicked: if (group.many && !group.open) root.toggle(group.modelData.app)
+                    // A stack opens; a notification takes you to its app.
+                    onClicked: {
+                        if (group.many && !group.open) { root.toggle(group.modelData.app); return; }
+                        Notifications.focusApp(entry.desktopEntry, entry.appName);
+                        Panels.closeAll?.();
+                    }
                     onDismissed: group.many && !group.open ? Notifications.removeIndexes(group.items) : Notifications.removeAt(modelData)
                 }
             }

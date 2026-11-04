@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import Quickshell.Hyprland
 import QtQuick
 import qs.config
 
@@ -13,6 +14,24 @@ Singleton {
     readonly property int waiting: Math.max(0, queue.length - 1)
 
     property var history: []
+    // A notification's app, brought forward: on Wayland an app can't raise its own window when told it was clicked,
+    // so the shell does. Its window by the desktop entry or name the notification gives, or the app started.
+    function focusApp(desktopEntry, appName) {
+        const want = [desktopEntry, appName].filter(x => x).map(x => String(x).toLowerCase().replace(/\.desktop$/, ""));
+        if (want.length === 0) return;
+        const short = w => w.split(".").pop();
+        const t = Hyprland.toplevels.values.find(t => {
+            const c = String(t.lastIpcObject?.class ?? t.wayland?.appId ?? "").toLowerCase();
+            return c && want.some(w => c === w || c === short(w) || short(c) === short(w));
+        });
+        if (t) {
+            const address = String(t.address).startsWith("0x") ? t.address : "0x" + t.address;
+            Compositor.dispatch(`hl.dsp.focus({ window = "address:${address}" })`);
+        } else {
+            const e = want.map(w => DesktopEntries.byId(w) ?? DesktopEntries.heuristicLookup(w)).find(e => e);
+            e?.execute();
+        }
+    }
     readonly property int maxHistory: 50
     property int unread: 0
     property bool dnd: false
@@ -81,7 +100,7 @@ Singleton {
             }
             const entry = {
                 id: n.id, appName: n.appName, appIcon: n.appIcon, summary: n.summary, body: n.body,
-                image: n.image, time: new Date(), urgency: n.urgency,
+                image: n.image, time: new Date(), urgency: n.urgency, desktopEntry: n.desktopEntry ?? "",
             };
             const seen = root.history.some(e => e.id === n.id && e.appName === n.appName && e.summary === n.summary);
             if (!seen) {

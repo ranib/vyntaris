@@ -67,8 +67,16 @@ Item {
         const t = windows[i];
         if (!t) return;
         Panels.overviewOpen = false;
-        const address = String(t.address).startsWith("0x") ? t.address : "0x" + t.address;
-        Compositor.dispatch(`hl.dsp.focus({ window = "address:${address}" })`);
+        // Focused once the switcher has let the keyboard go: while it holds it, Hyprland moves no focus, so
+        // letting go of Alt closed it and left the window as it was.
+        focusLater.address = String(t.address).startsWith("0x") ? t.address : "0x" + t.address;
+        focusLater.restart();
+    }
+    Timer {
+        id: focusLater
+        property string address
+        interval: 80
+        onTriggered: Compositor.dispatch(`hl.dsp.focus({ window = "address:${address}" })`)
     }
 
     Item {

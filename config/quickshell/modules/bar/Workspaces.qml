@@ -23,15 +23,25 @@ Item {
         if (all.some(w => w.id <= 0 && /^\d+$/.test(w.name ?? "")) && !asked.running) { Hyprland.refreshWorkspaces(); asked.start(); }
         list = all.filter(w => numberOf(w) > 0).sort((a, b) => numberOf(a) - numberOf(b));
         const ids = list.map(w => numberOf(w));
-        // Only what changed moves: a new number comes in, an emptied one goes, the rest stay where they are.
-        for (let i = shown.count - 1; i >= 0; i--)
-            if (!ids.includes(shown.get(i).wid)) shown.remove(i);
-        ids.forEach((id, i) => {
-            if (i < shown.count && shown.get(i).wid === id) return;
-            let at = -1;
-            for (let k = i + 1; k < shown.count; k++) if (shown.get(k).wid === id) { at = k; break; }
-            if (at >= 0) shown.move(at, i, 1); else shown.insert(i, { wid: id });
-        });
+        // Only what changed moves. One that's gone is marked leaving and shrinks away by itself (drop() takes it out
+        // after); one that's new goes in where its number belongs, and grows in.
+        for (let i = 0; i < shown.count; i++) {
+            const e = shown.get(i);
+            if (!ids.includes(e.wid) && !e.leaving) shown.setProperty(i, "leaving", true);
+            else if (ids.includes(e.wid) && e.leaving) shown.setProperty(i, "leaving", false);
+        }
+        for (const id of ids) {
+            let at = 0, have = false;
+            for (let i = 0; i < shown.count; i++) {
+                const w = shown.get(i).wid;
+                if (w === id) { have = true; break; }
+                if (w < id) at = i + 1;
+            }
+            if (!have) shown.insert(at, { wid: id, leaving: false });
+        }
+    }
+    function drop(wid) {
+        for (let i = 0; i < shown.count; i++) if (shown.get(i).wid === wid && shown.get(i).leaving) { shown.remove(i); return; }
     }
     ListModel { id: shown }
     Timer { id: asked; interval: 1000 }
@@ -43,11 +53,7 @@ Item {
     }
     Component.onCompleted: rebuild()
     Timer { interval: 400; running: true; repeat: true; property int left: 8; onTriggered: { root.rebuild(); if (--left <= 0) stop(); } }
-    readonly property int activeIndex: {
-        void shown.count;
-        const f = Hyprland.focusedWorkspace;
-        return f ? list.findIndex(w => w === f || numberOf(w) === numberOf(f)) : -1;
-    }
+    readonly property int focusedNumber: Hyprland.focusedWorkspace ? numberOf(Hyprland.focusedWorkspace) : -1
 
     readonly property var scratchpad: Hyprland.workspaces.values.find(w => w.name === "special:magic") ?? null
     readonly property bool scratchpadShown:
@@ -77,11 +83,23 @@ Item {
     implicitWidth: row.implicitWidth
     implicitHeight: Theme.barHeight - 8
 
+    // The highlight goes where the focused number will be once the numbers settle (each at its full width, the ones
+    // leaving not counted), and slides there once: following them as they grow and shrink made it run off.
+    readonly property var rest: {
+        void shown.count;
+        let x = 0, at = -1, w = 0;
+        for (let i = 0; i < numbers.count; i++) {
+            const it = numbers.itemAt(i);
+            if (!it || it.leaving) continue;
+            if (it.wid === focusedNumber) { at = x; w = it.full; }
+            x += it.full;
+        }
+        return { x: at, width: w };
+    }
     Rectangle {
-        readonly property Item target: { void view.count; void view.contentWidth; return root.activeIndex >= 0 ? view.itemAtIndex(root.activeIndex) : null; }
-        visible: target !== null
-        x: target?.x ?? 0
-        width: target?.width ?? 0
+        visible: root.rest.x >= 0
+        x: Math.max(0, root.rest.x)
+        width: root.rest.width
         height: parent.height
         radius: Theme.r(height / 2)
         color: Theme.accent
@@ -93,48 +111,31 @@ Item {
         id: row
         height: parent.height
 
-        ListView {
-            id: view
-            orientation: ListView.Horizontal
-            interactive: false
-            // The room the numbers take as they are, a leaving one's shrinking included (contentWidth isn't told).
-            width: contentItem.childrenRect.width
-            height: row.height
+        // Each number takes the room it has (`span` of its full width), so the row is right every frame: one coming in
+        // grows into place, one leaving shrinks and fades out of it, and the rest move over with them.
+        Repeater {
+            id: numbers
             model: shown
-            // A number comes in growing, an emptied one shrinks and fades, and the ones beside it slide over.
-            add: Transition {
-                NumberAnimation { property: "span"; from: 0; to: 1; duration: Theme.durationNormal; easing.bezierCurve: Theme.curvePanelIn }
-                NumberAnimation { property: "scale"; from: 0.4; to: 1; duration: Theme.durationSlow; easing.bezierCurve: Theme.curveSpring }
-                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Theme.durationNormal }
-            }
-            displaced: Transition {
-                NumberAnimation { property: "x"; duration: Theme.durationNormal; easing.bezierCurve: Theme.curveSpring }
-            }
 
-            delegate: Item {
+            Item {
                 id: ws
                 required property int wid
-                required property int index
+                required property bool leaving
                 readonly property var modelData: root.list.find(w => root.numberOf(w) === wid) ?? ({ id: wid, toplevels: { values: [] } })
-                readonly property bool focused: root.activeIndex === index
+                readonly property bool focused: !leaving && root.focusedNumber === wid
                 readonly property var appIcons: Config.bar.workspaceIcons ? root.icons(modelData) : []
+                readonly property real full: Math.max(24, content.implicitWidth + 14)
 
-                property real span: 1
-                width: Math.max(24, content.implicitWidth + 14) * span
-                // An emptied workspace's number stays while it shrinks, fades and gives its room back.
-                ListView.onRemove: SequentialAnimation {
-                    PropertyAction { target: ws; property: "ListView.delayRemove"; value: true }
-                    ParallelAnimation {
-                        NumberAnimation { target: ws; property: "scale"; to: 0.4; duration: Theme.durationNormal; easing.bezierCurve: Theme.curvePanelOut }
-                        NumberAnimation { target: ws; property: "opacity"; to: 0; duration: Theme.durationNormal }
-                        NumberAnimation { target: ws; property: "span"; to: 0; duration: Theme.durationNormal; easing.bezierCurve: Theme.curvePanelOut }
-                    }
-                    PropertyAction { target: ws; property: "ListView.delayRemove"; value: false }
-                }
+                property real span: 0
+                Component.onCompleted: span = 1
+                onLeavingChanged: span = leaving ? 0 : 1
+                Behavior on span { Anim { duration: Theme.durationNormal; easing.bezierCurve: Theme.curvePanelIn } }
+                onSpanChanged: if (leaving && span <= 0) root.drop(wid)
+
+                width: full * span
                 height: row.height
-
-                // Eases a change in its icons; coming in or going, its width follows `span` frame by frame instead.
-                Behavior on width { enabled: ws.span === 1; Anim { duration: Theme.durationNormal; easing.bezierCurve: Theme.curveSpring } }
+                opacity: span
+                clip: span < 1
 
                 RowLayout {
                     id: content
